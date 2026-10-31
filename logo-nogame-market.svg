@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" role="img" aria-labelledby="title desc">
+<title id="title">NOGAME MARKET</title><desc id="desc">Logo NOGAME MARKET, symbole géométrique bleu et orange.</desc>
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2878D0"/><stop offset="1" stop-color="#20B8B0"/></linearGradient></defs>
+<rect x="5" y="9" width="94" height="94" rx="25" fill="#101827"/>
+<path d="M27 72V38h9l29 22V38h10v34h-9L37 50v22z" fill="url(#g)"/>
+<path d="M77 27h12v12H77z" fill="#F28C28"/>
+<text x="116" y="57" font-family="Arial,sans-serif" font-size="39" font-weight="800" fill="#101827" letter-spacing="1">NOGAME</text>
+<text x="118" y="88" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#2878D0" letter-spacing="6">MARKET</text>
+</svg>
