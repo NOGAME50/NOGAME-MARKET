@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const LOGO_URL = "https://i.postimg.cc/DfBcYkXr/nogame-market-logo.png";
+const LOGO_URL = "https://i.postimg.cc/HLPtsFQ6/file-0000000059a881f6ab9678fff5faea2f.png";
 
 export default function Brand({ compact = false }: { compact?: boolean }) {
   return (
