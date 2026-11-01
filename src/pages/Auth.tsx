@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { LockKeyhole, Mail, UserRound, Phone, ArrowRight } from "lucide-react";
 import Brand from "../components/Brand";
 import { supabase } from "../lib/supabase";
@@ -13,6 +13,8 @@ export default function Auth({ mode }: { mode: "login" | "register" }) {
   const [phone, setPhone] = useState(""); const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
   const navigate = useNavigate(); const { refreshProfile } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from || "/compte";
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setMessage("");
     if (!supabase) { setMessage("Supabase n’est pas configuré. Complète le fichier .env."); return; }
@@ -20,11 +22,11 @@ export default function Auth({ mode }: { mode: "login" | "register" }) {
     if (mode === "register") {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name, requested_role: role, phone } } });
       if (error) setMessage(error.message);
-      else if (data.session) { await refreshProfile(); navigate("/compte"); }
+      else if (data.session) { await refreshProfile(); navigate(from); }
       else setMessage("Compte créé. Vérifie ton courriel pour confirmer l’adresse avant de te connecter.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMessage(error.message); else { await refreshProfile(); navigate("/compte"); }
+      if (error) setMessage(error.message); else { await refreshProfile(); navigate(from); }
     }
     setBusy(false);
   };
