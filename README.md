@@ -70,4 +70,4 @@ Après validation de la version web, Capacitor pourra être ajouté pour génér
 
 ## Identité visuelle
 
-Le logo officiel NOGAME MARKET est intégré dans `public/nogame-market-logo.png`. Il est utilisé dans l’en-tête, le pied de page, les écrans de connexion et comme favicon du site. Les icônes d’interface restent au format SVG via Lucide.
+Le logo officiel NOGAME MARKET est intégré dans `public/nogame-market-logo.png`. Il est utilisé dans l’en-tête, le pied de page, les écrans de connexion et comme favicon du site. Les icônes d’interface restent au format SVG via Lucide a.
