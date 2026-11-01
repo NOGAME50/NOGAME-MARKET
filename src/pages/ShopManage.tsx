@@ -5,7 +5,20 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../state/AuthContext";
 import type { Shop } from "../types";
 
-interface Item { id: string; name: string; description: string | null; price: number; currency: string; stock: number; category: string | null; is_active: boolean; }
+interface Item { id: string; name: string; description: string | null; price: number; currency: string; stock: number; category: string | null; is_active: boolean; image_url: string | null; }
+
+async function shrink(file: File): Promise<Blob> {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1200 / Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width * scale);
+  const h = Math.round(bmp.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Image illisible");
+  ctx.drawImage(bmp, 0, 0, w, h);
+  return await new Promise<Blob>((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error("Compression impossible")), "image/jpeg", 0.85));
+}
 
 export default function ShopManage() {
   const { id } = useParams();
@@ -21,12 +34,14 @@ export default function ShopManage() {
   const [currency, setCurrency] = useState("HTG");
   const [stock, setStock] = useState("1");
   const [category, setCategory] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const load = useCallback(async () => {
     if (!supabase || !user || !id) { setLoading(false); return; }
     const s = await supabase.from("shops").select("id,owner_id,name,description,logo_url,is_active").eq("id", id).eq("owner_id", user.id).maybeSingle();
     setShop((s.data as Shop | null) ?? null);
-    const p = await supabase.from("products").select("id,name,description,price,currency,stock,category,is_active").eq("shop_id", id).order("created_at", { ascending: false });
+    const p = await supabase.from("products").select("id,name,description,price,currency,stock,category,is_active,image_url").eq("shop_id", id).order("created_at", { ascending: false });
     setItems((p.data as Item[]) || []);
     setLoading(false);
   }, [id, user]);
@@ -35,15 +50,28 @@ export default function ShopManage() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!supabase || !id) return;
+    if (!supabase || !id || !user) return;
     setBusy(true); setError("");
+    let imageUrl: string | null = null;
+    if (file) {
+      try {
+        const blob = await shrink(file);
+        const path = user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+        const up = await supabase.storage.from("product-images").upload(path, blob, { contentType: "image/jpeg" });
+        if (up.error) { setError("Envoi de l’image impossible : " + up.error.message); setBusy(false); return; }
+        imageUrl = supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+      } catch {
+        setError("Cette image ne peut pas être lue. Choisis une photo JPG, PNG ou WEBP.");
+        setBusy(false); return;
+      }
+    }
     const { error: err } = await supabase.from("products").insert({
       shop_id: id, name: name.trim(), description: description.trim() || null,
       price: Number(price), currency, stock: Number(stock),
-      category: category.trim() || null, is_active: true
+      category: category.trim() || null, image_url: imageUrl, is_active: true
     });
     if (err) setError(err.message);
-    else { setName(""); setDescription(""); setPrice(""); setStock("1"); setCategory(""); await load(); }
+    else { setName(""); setDescription(""); setPrice(""); setStock("1"); setCategory(""); setFile(null); setFileKey(k => k + 1); await load(); }
     setBusy(false);
   };
 
@@ -78,13 +106,14 @@ export default function ShopManage() {
       <label>Devise<select value={currency} onChange={e => setCurrency(e.target.value)}><option value="HTG">HTG (gourdes)</option><option value="USD">USD (dollars)</option></select></label>
       <label>Quantité en stock<input required type="number" min="0" step="1" inputMode="numeric" value={stock} onChange={e => setStock(e.target.value)}/></label>
       <label>Catégorie<input value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex : Vêtements"/></label>
+      <label>Photo du produit<input key={fileKey} type="file" accept="image/*" onChange={e => setFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}/></label>
       {error && <div className="notice notice-error">{error}</div>}
       <button className="btn btn-primary" disabled={busy}>{busy ? "Enregistrement…" : "Ajouter le produit"}</button>
     </form>
 
     <h2 className="subheading">Mes produits ({items.length})</h2>
     {items.length ? items.map(it => <div className="shop-row" key={it.id}>
-      <div className="shop-icon"><Package/></div>
+      {it.image_url ? <img src={it.image_url} alt="" style={{ width: 48, height: 48, borderRadius: 14, objectFit: "cover" }}/> : <div className="shop-icon"><Package/></div>}
       <div><b>{it.name}</b><span>{Number(it.price).toLocaleString("fr-HT")} {it.currency} · stock : {it.stock}</span><small>{it.is_active ? "Visible" : "Masqué"}{it.category ? " · " + it.category : ""}</small></div>
       <button className="btn btn-light" onClick={() => void toggle(it)} aria-label="Afficher ou masquer">{it.is_active ? <EyeOff size={16}/> : <Eye size={16}/>}</button>
       <button className="btn btn-light" onClick={() => void remove(it)} aria-label="Supprimer"><Trash2 size={16}/></button>
