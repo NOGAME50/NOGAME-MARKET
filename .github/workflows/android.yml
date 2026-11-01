@@ -1,0 +1,63 @@
+name: Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Construire le site
+        run: npm run build
+
+      - name: Créer le projet Android
+        run: npx cap add android
+
+      - name: Logo et écran de démarrage
+        continue-on-error: true
+        run: |
+          mkdir -p assets
+          curl -L -o assets/logo.png "https://i.postimg.cc/HLPtsFQ6/file-0000000059a881f6ab9678fff5faea2f.png"
+          npx --yes @capacitor/assets generate --android --iconBackgroundColor "#101827" --splashBackgroundColor "#101827"
+
+      - name: Autoriser GPS et photos
+        run: |
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.CAMERA" />\n</manifest>#' android/app/src/main/AndroidManifest.xml
+
+      - name: Synchroniser
+        run: npx cap sync android
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Préparer le fichier
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
+
+      - name: Publier l'APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: NOGAME MARKET APK ${{ github.run_number }}
+          prerelease: true
+          files: NOGAME-MARKET.apk
