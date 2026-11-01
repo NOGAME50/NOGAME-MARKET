@@ -1,6 +1,6 @@
 export type UserRole = "buyer" | "merchant" | "wholesaler" | "admin";
 export interface Profile { id: string; full_name: string | null; role: UserRole; phone: string | null; }
-export interface Shop { id: string; owner_id: string; name: string; description: string | null; logo_url: string | null; is_active: boolean; phone: string | null; latitude: number | null; longitude: number | null; }
+export interface Shop { id: string; owner_id: string; name: string; description: string | null; logo_url: string | null; is_active: boolean; phone: string | null; latitude: number | null; longitude: number | null; zone: string | null; }
 export interface Product {
   id: string; shop_id: string; name: string; description: string | null; price: number;
   currency: string; stock: number; image_url: string | null; category: string | null;
