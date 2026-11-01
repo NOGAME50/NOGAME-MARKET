@@ -35,6 +35,7 @@ export default function Merchant() {
     <div className="section-heading">
       <div><span className="eyebrow">ESPACE PROFESSIONNEL</span><h1>Centre vendeur</h1><p>Gère ta boutique et tes produits.</p></div>
       {!loading && !hasShop && isSeller && <Link className="btn btn-primary" to="/vendeur/nouvelle-boutique"><Plus/>Créer une boutique</Link>}
+      {!loading && hasShop && <Link className="btn btn-primary" to={`/vendeur/boutique/${shops[0].id}`}><Plus/>Ajouter un produit</Link>}
     </div>
     {!isSeller && <div className="notice"><AlertCircle/><span>Ton profil n’a pas encore le rôle vendeur. Il doit être autorisé avant de créer une boutique.</span></div>}
     <div className="quick-grid">
