@@ -1,0 +1,6 @@
+{
+  "appId": "com.nogame.market",
+  "appName": "NOGAME MARKET",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" }
+}
