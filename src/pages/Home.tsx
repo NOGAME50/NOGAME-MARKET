@@ -3,9 +3,12 @@ import { ArrowRight, ShieldCheck, Truck, Headphones, Search, Store, ShoppingBag 
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { useAuth } from "../state/AuthContext";
 import type { Product } from "../types";
 
 export default function Home() {
+  const { profile } = useAuth();
+  const isSeller = profile?.role === "merchant" || profile?.role === "wholesaler";
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,7 +34,7 @@ export default function Home() {
         <span className="hero-tag"><span className="live-dot"/> LA MARKETPLACE HAÏTIENNE</span>
         <h1>Le commerce haïtien,<br/><em>à portée de main.</em></h1>
         <p>Découvre des produits proposés par des boutiques haïtiennes. Achète et développe ton activité au même endroit.</p>
-        <div className="hero-actions"><Link to="/boutiques" className="btn btn-primary">Explorer <ArrowRight size={18}/></Link><Link to="/inscription?role=merchant" className="btn btn-light">Ouvrir une boutique</Link></div>
+        <div className="hero-actions"><Link to="/boutiques" className="btn btn-primary">Explorer <ArrowRight size={18}/></Link>{isSeller ? <Link to="/vendeur" className="btn btn-light">Mon espace vendeur</Link> : <Link to="/inscription?role=merchant" className="btn btn-light">Ouvrir une boutique</Link>}</div>
         <div className="hero-trust"><span><ShieldCheck/>Comptes sécurisés</span><span><Store/>Vendeurs haïtiens</span></div>
       </div>
       <div className="hero-art" aria-hidden="true"><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><div className="hero-cube"><ShoppingBag size={82}/><b>NM</b></div><div className="float-card float-one"><Store/> Boutiques locales</div><div className="float-card float-two"><Truck/> Commerce connecté</div></div>
@@ -48,6 +51,6 @@ export default function Home() {
       {error && <div className="notice notice-error">{error}</div>}
       {loading ? <div className="empty-state">Chargement des produits…</div> : filtered.length ? <div className="product-grid">{filtered.map(p => <ProductCard key={p.id} product={p}/>)}</div> : <div className="empty-state"><ShoppingBag/><b>Aucun produit disponible pour le moment</b><span>Les produits apparaîtront ici lorsqu’une boutique active en aura publié.</span></div>}
     </section>
-    <section className="seller-banner"><div><span className="eyebrow">TU ES VENDEUR ?</span><h2>Fais grandir ton commerce avec NOGAME MARKET.</h2><p>Crée ton espace vendeur, présente tes produits et gère ton activité.</p></div><Link to="/inscription?role=merchant" className="btn btn-primary">Devenir vendeur <ArrowRight/></Link></section>
+    {!isSeller && <section className="seller-banner"><div><span className="eyebrow">TU ES VENDEUR ?</span><h2>Fais grandir ton commerce avec NOGAME MARKET.</h2><p>Crée ton espace vendeur, présente tes produits et gère ton activité.</p></div><Link to="/inscription?role=merchant" className="btn btn-primary">Devenir vendeur <ArrowRight/></Link></section>}
   </div>;
 }
