@@ -7,6 +7,7 @@ import Account from "./pages/Account";
 import Merchant from "./pages/Merchant";
 import ShopCreate from "./pages/ShopCreate";
 import ShopManage from "./pages/ShopManage";
+import ShopSettings from "./pages/ShopSettings";
 import Shops from "./pages/Shops";
 import ShopPage from "./pages/ShopPage";
 import ProductDetail from "./pages/ProductDetail";
@@ -22,6 +23,7 @@ export default function App(){return <Routes><Route element={<Layout/>}>
 <Route path="vendeur" element={<Protected><Merchant/></Protected>}/>
 <Route path="vendeur/nouvelle-boutique" element={<Protected><ShopCreate/></Protected>}/>
 <Route path="vendeur/boutique/:id" element={<Protected><ShopManage/></Protected>}/>
+<Route path="vendeur/boutique/:id/infos" element={<Protected><ShopSettings/></Protected>}/>
 <Route path="compte" element={<Protected><Account/></Protected>}/>
 <Route path="commandes" element={<Protected><Placeholder kind="orders"/></Protected>}/>
 <Route path="assistance" element={<Placeholder kind="help"/>}/>
