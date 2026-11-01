@@ -19,7 +19,7 @@ export default function Shops() {
     const load = async () => {
       if (!supabase) { setLoading(false); return; }
       const { data } = await supabase.from("shops")
-        .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude")
+        .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone")
         .eq("is_active", true).order("created_at", { ascending: false }).limit(300);
       if (ok) { setShops((data as Shop[]) || []); setLoading(false); }
     };
@@ -36,7 +36,7 @@ export default function Shops() {
   };
 
   const list = useMemo(
-    () => rankShops(shops.filter(s => s.name.toLowerCase().includes(query.trim().toLowerCase())), here),
+    () => rankShops(shops.filter(s => (s.name + " " + (s.zone || "")).toLowerCase().includes(query.trim().toLowerCase())), here),
     [shops, query, here]
   );
 
@@ -44,7 +44,7 @@ export default function Shops() {
     <span className="eyebrow">DÉCOUVRIR</span>
     <h1>Boutiques</h1>
     <p className="muted">{here ? "Triées de la plus proche à la plus éloignée." : "Active ta position pour voir les boutiques les plus proches de toi."}</p>
-    <label className="search-box"><Search/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une boutique par son nom…"/></label>
+    <label className="search-box"><Search/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une boutique ou une zone…"/></label>
     <button className="btn btn-light" style={{ border: "1px solid #dfe6ee" }} onClick={() => void locate()} disabled={locating}><MapPin size={16}/>{locating ? "Recherche de ta position…" : here ? "Position activée" : "Boutiques près de moi"}</button>
     {geoMsg && <div className="notice notice-error">{geoMsg}</div>}
     {loading ? <div className="empty-state">Chargement…</div> : list.length
