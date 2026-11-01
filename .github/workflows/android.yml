@@ -9,51 +9,101 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Récupérer le code source
       - name: Récupérer le code
         uses: actions/checkout@v4
 
+      # 2. Installer Node.js
       - name: Installer Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3. Installer Java
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # 4. Installer les dépendances
       - name: Installer les dépendances
         run: npm install
 
+      # 5. Construire le site web
       - name: Construire le site
         run: npm run build
 
+      # 6. Créer le projet Android si nécessaire
       - name: Créer le projet Android
-        run: npx cap add android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
+      # 7. Préparer le logo et le splash screen
       - name: Logo et écran de démarrage
-        continue-on-error: true
         run: |
           mkdir -p assets
-          curl -L -o assets/logo.png "https://i.postimg.cc/HLPtsFQ6/file-0000000059a881f6ab9678fff5faea2f.png"
-          npx --yes @capacitor/assets generate --android --iconBackgroundColor "#101827" --splashBackgroundColor "#101827"
 
+          curl -fL -o assets/icon.png \
+            "https://i.postimg.cc/0QzqThsV/image-1024x1024.png"
+
+          cp assets/icon.png assets/splash.png
+
+          npx --yes @capacitor/assets generate \
+            --android \
+            --iconBackgroundColor "#101827" \
+            --splashBackgroundColor "#101827"
+
+      # 8. Autoriser GPS, caméra et accès aux photos
       - name: Autoriser GPS et photos
         run: |
-          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.CAMERA" />\n</manifest>#' android/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
 
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          content = manifest.read_text()
+
+          permissions = [
+              '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
+              '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+              '    <uses-permission android:name="android.permission.CAMERA" />',
+              '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
+              '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />'
+          ]
+
+          for permission in permissions:
+              permission_name = permission.split('"')[1]
+
+              if permission_name not in content:
+                  content = content.replace(
+                      '</manifest>',
+                      permission + '\n</manifest>'
+                  )
+
+          manifest.write_text(content)
+          PY
+
+      # 9. Synchroniser Capacitor
       - name: Synchroniser
         run: npx cap sync android
 
+      # 10. Compiler l'APK
       - name: Compiler l'APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
+      # 11. Préparer le fichier APK
       - name: Préparer le fichier
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
 
+      # 12. Publier l'APK sur GitHub Releases
       - name: Publier l'APK
         uses: softprops/action-gh-release@v2
         with:
