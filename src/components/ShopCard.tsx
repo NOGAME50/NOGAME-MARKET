@@ -10,7 +10,7 @@ export default function ShopCard({ shop, km }: { shop: Shop; km: number | null }
       <b>{shop.name}</b>
       <span>{shop.description || "Boutique NOGAME MARKET"}</span>
       <small style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        <MapPin size={12}/>{km !== null ? formatDistance(km) : "Position non indiquée"}
+        <MapPin size={12}/>{[shop.zone, km !== null ? formatDistance(km) : null].filter(Boolean).join(" · ") || "Position non indiquée"}
         {shop.phone ? <><Phone size={12}/>{shop.phone}</> : null}
       </small>
     </div>
