@@ -19,7 +19,7 @@ export default function ShopPage() {
     const load = async () => {
       if (!supabase || !id) { setLoading(false); return; }
       const s = await supabase.from("shops")
-        .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude")
+        .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone")
         .eq("id", id).eq("is_active", true).maybeSingle();
       const p = await supabase.from("products")
         .select("id,shop_id,name,description,price,currency,stock,image_url,category,shops(id,name)")
@@ -49,7 +49,7 @@ export default function ShopPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         {shop.logo_url ? <img src={shop.logo_url} alt="" style={{ width: 64, height: 64, borderRadius: 18, objectFit: "cover" }}/> : <div className="shop-icon" style={{ width: 64, height: 64 }}><Store/></div>}
         <div><h1 style={{ margin: 0, fontSize: 28 }}>{shop.name}</h1>
-          <small className="muted" style={{ display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13}/>{km !== null ? formatDistance(km) + " de toi" : "Position non indiquée"}</small></div>
+          <small className="muted" style={{ display: "flex", alignItems: "center", gap: 6 }}><MapPin size={13}/>{[shop.zone, km !== null ? formatDistance(km) + " de toi" : null].filter(Boolean).join(" · ") || "Position non indiquée"}</small></div>
       </div>
       {shop.description && <p className="muted" style={{ margin: 0 }}>{shop.description}</p>}
       {shop.phone
