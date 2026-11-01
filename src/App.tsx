@@ -6,6 +6,7 @@ import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import Merchant from "./pages/Merchant";
 import ShopCreate from "./pages/ShopCreate";
+import ShopManage from "./pages/ShopManage";
 import Plans from "./pages/Plans";
 import ProductDetail from "./pages/ProductDetail";
 import Placeholder from "./pages/Placeholder";
@@ -18,6 +19,7 @@ export default function App(){return <Routes><Route element={<Layout/>}>
 <Route path="boutiques" element={<div className="section narrow"><span className="eyebrow">DÉCOUVRIR</span><h1>Boutiques</h1><p className="muted">Les boutiques visibles seront listées ici dès que la requête publique et les règles d’abonnement seront en place.</p><div className="empty-state"><StoreIcon/><b>Aucune boutique affichée</b><span>Les boutiques non validées ou sans abonnement actif restent masquées.</span></div></div>}/>
 <Route path="vendeur" element={<Protected><Merchant/></Protected>}/>
 <Route path="vendeur/nouvelle-boutique" element={<Protected><ShopCreate/></Protected>}/>
+<Route path="vendeur/boutique/:id" element={<Protected><ShopManage/></Protected>}/>
 <Route path="vendeur/abonnements" element={<Protected><Plans/></Protected>}/>
 <Route path="compte" element={<Protected><Account/></Protected>}/>
 <Route path="commandes" element={<Protected><Placeholder kind="orders"/></Protected>}/>
