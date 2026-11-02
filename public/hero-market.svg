@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="Panier de courses, sacs et téléphone">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07194d"/><stop offset=".58" stop-color="#073b9a"/><stop offset="1" stop-color="#07143b"/></linearGradient>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffb12b"/><stop offset="1" stop-color="#f26a00"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16baff"/><stop offset="1" stop-color="#0751d4"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4fbff"/><stop offset="1" stop-color="#829dbb"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="900" height="420" rx="34" fill="url(#bg)"/>
+<path d="M0 0h440C340 125 250 190 0 210z" fill="#0a2d79" opacity=".85"/>
+<path d="M900 0v420H760c90-100 115-240 60-420z" fill="url(#orange)" opacity=".95"/>
+<g fill="#1687ff" opacity=".55"><circle cx="55" cy="58" r="6"/><circle cx="92" cy="58" r="6"/><circle cx="129" cy="58" r="6"/><circle cx="55" cy="95" r="6"/><circle cx="92" cy="95" r="6"/><circle cx="129" cy="95" r="6"/></g>
+<ellipse cx="520" cy="350" rx="260" ry="24" fill="#000" opacity=".4" filter="url(#shadow)"/>
+<!-- phone -->
+<g transform="translate(615 42) rotate(8)"><rect width="178" height="300" rx="28" fill="#061127" stroke="#6bcaff" stroke-width="5"/><rect x="12" y="17" width="154" height="266" rx="19" fill="url(#blue)"/><rect x="65" y="8" width="48" height="7" rx="4" fill="#020916"/><circle cx="90" cy="265" r="7" fill="#8be6ff" opacity=".8"/><path d="M38 85h100M38 105h75" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".75"/></g>
+<!-- bags -->
+<g transform="translate(360 82)"><path d="M22 64q4-53 42-53t42 53" fill="none" stroke="#ffb52b" stroke-width="10"/><path d="M5 60h122l-10 158H16z" fill="url(#orange)" stroke="#ffce65" stroke-width="4"/><path d="M145 88q2-45 34-45t35 45" fill="none" stroke="#27c8ff" stroke-width="9"/><path d="M135 84h92l-8 130h-78z" fill="url(#blue)" stroke="#7be2ff" stroke-width="4"/></g>
+<g transform="translate(475 110)"><path d="M10 46q2-42 31-42t32 42" fill="none" stroke="#08c5ff" stroke-width="8"/><path d="M0 45h84l-7 132H8z" fill="#087be9" stroke="#6de2ff" stroke-width="4"/></g>
+<!-- cart -->
+<g transform="translate(250 175)" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linejoin="round">
+ <path d="M0 0h55l34 150h300l50-112H75"/>
+ <path d="M103 64h312M115 103h286M128 140h260M165 47l-5 103M240 47l-2 103M315 47l-1 103" stroke-width="5" opacity=".9"/>
+ <path d="M90 150l-20 30h310" stroke-width="8"/>
+</g>
+<g fill="#f7fbff"><circle cx="370" cy="375" r="18"/><circle cx="650" cy="375" r="18"/></g><g fill="#18345d"><circle cx="370" cy="375" r="8"/><circle cx="650" cy="375" r="8"/></g>
+<path d="M275 322c-105 15-120 80 15 75 110-4 210-35 295-75" fill="none" stroke="#ffb32d" stroke-width="12" stroke-linecap="round" opacity=".95"/>
+<path d="M590 321c80-48 116-100 90-134" fill="none" stroke="#ffb32d" stroke-width="8" stroke-linecap="round"/>
+</svg>
