@@ -38,6 +38,7 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
 
+  // Récupération du profil utilisateur
   const refreshProfile = async (): Promise<void> => {
     if (!supabase) {
       setProfile(null);
@@ -68,11 +69,7 @@ export function AuthProvider({
         .maybeSingle();
 
       if (error) {
-        console.error(
-          'Erreur de récupération du profil :',
-          error
-        );
-
+        console.error('Erreur récupération profil :', error);
         setProfile(null);
         setProfileError(error.message);
         return;
@@ -80,9 +77,7 @@ export function AuthProvider({
 
       if (!data) {
         setProfile(null);
-        setProfileError(
-          'Aucun profil trouvé pour cet utilisateur.'
-        );
+        setProfileError('Aucun profil trouvé pour cet utilisateur.');
         return;
       }
 
@@ -101,12 +96,16 @@ export function AuthProvider({
     }
   };
 
+  // Initialisation de l'authentification
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
       setProfileError('Supabase n’est pas configuré.');
       return;
     }
+
+    // Référence non nullable pour TypeScript
+    const client = supabase;
 
     let alive = true;
 
@@ -115,7 +114,7 @@ export function AuthProvider({
         const {
           data: { session: current },
           error
-        } = await supabase.auth.getSession();
+        } = await client.auth.getSession();
 
         if (error) {
           throw error;
@@ -133,10 +132,7 @@ export function AuthProvider({
         }
 
       } catch (error) {
-        console.error(
-          'Initialisation AuthContext :',
-          error
-        );
+        console.error('Initialisation AuthContext :', error);
 
         setProfileError(
           error instanceof Error
@@ -153,9 +149,10 @@ export function AuthProvider({
 
     void initialize();
 
+    // Surveillance des changements de session
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange(
+    } = client.auth.onAuthStateChange(
       (_event, nextSession) => {
         setSession(nextSession);
 
