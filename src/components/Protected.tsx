@@ -1,11 +1,4 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../state/AuthContext";
-import type { UserRole } from "../types";
-export default function Protected({ children, roles }: { children: React.ReactNode; roles?: UserRole[] }) {
-  const { user, profile, loading } = useAuth();
-  const location = useLocation();
-  if (loading) return <div className="page-loading">Chargement sécurisé…</div>;
-  if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname }} />;
-  if (roles && (!profile || !roles.includes(profile.role))) return <Navigate to="/" replace />;
-  return <>{children}</>;
-}
+import { Navigate,useLocation } from 'react-router-dom';
+import { useAuth } from '../state/AuthContext';
+import type { UserRole } from '../types';
+export default function Protected({children,roles}:{children:React.ReactNode;roles?:UserRole[]}){const{user,profile,loading}=useAuth();const location=useLocation();if(loading)return <div className="page-loading">Chargement sécurisé…</div>;if(!user)return <Navigate to="/connexion" replace state={{from:location.pathname}}/>;if(!profile)return <div className="section narrow"><h2>Profil indisponible</h2><p>Impossible de vérifier les autorisations du compte. Réessaie plus tard.</p></div>;if(profile.account_status==='suspended')return <div className="section narrow"><h2>Compte suspendu</h2><p>Contacte l'assistance pour demander un réexamen.</p></div>;if(roles&&!roles.includes(profile.role))return <Navigate to="/" replace/>;return <>{children}</>;}
