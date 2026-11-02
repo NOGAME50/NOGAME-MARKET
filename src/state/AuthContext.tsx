@@ -1,51 +1,179 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../state/AuthContext';
 import {
-  UserRound,
-  Store,
-  Flag,
-  Settings
-} from 'lucide-react';
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from 'react';
 
-export default function Account() {
-  const { user, profile } = useAuth();
+import type { Session, User } from '@supabase/supabase-js';
+import type { Profile } from '../types';
+
+import { supabase } from '../lib/supabase';
+
+type AuthValue = {
+  session: Session | null;
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+  profileError: string | null;
+  refreshProfile: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthValue>({
+  session: null,
+  user: null,
+  profile: null,
+  loading: true,
+  profileError: null,
+  refreshProfile: async () => {}
+});
+
+export function AuthProvider({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  const refreshProfile = async () => {
+    if (!supabase) {
+      setProfile(null);
+      setProfileError('Supabase n’est pas configuré.');
+      return;
+    }
+
+    try {
+      const {
+        data: { session: current },
+        error: sessionError
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!current) {
+        setProfile(null);
+        setProfileError('Aucune session utilisateur active.');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id,full_name,role,phone,account_status,trust_level')
+        .eq('id', current.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erreur de récupération du profil :', error);
+        setProfile(null);
+        setProfileError(error.message);
+        return;
+      }
+
+      if (!data) {
+        setProfile(null);
+        setProfileError(
+          'Aucun profil trouvé pour cet utilisateur.'
+        );
+        return;
+      }
+
+      setProfile(data as Profile);
+      setProfileError(null);
+
+    } catch (error) {
+      console.error('Erreur AuthContext :', error);
+
+      setProfile(null);
+      setProfileError(
+        error instanceof Error
+          ? error.message
+          : 'Erreur inconnue lors du chargement du profil.'
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      setProfileError('Supabase n’est pas configuré.');
+      return;
+    }
+
+    let alive = true;
+
+    const initialize = async () => {
+      try {
+        const {
+          data: { session: current },
+          error
+        } = await supabase.auth.getSession();
+
+        if (error) throw error;
+        if (!alive) return;
+
+        setSession(current);
+
+        if (current) {
+          await refreshProfile();
+        } else {
+          setProfile(null);
+        }
+
+      } catch (error) {
+        console.error('Initialisation AuthContext :', error);
+        setProfileError(
+          error instanceof Error
+            ? error.message
+            : 'Impossible de vérifier la session.'
+        );
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    void initialize();
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+
+      if (!nextSession) {
+        setProfile(null);
+        setProfileError(null);
+        return;
+      }
+
+      window.setTimeout(() => {
+        void refreshProfile();
+      }, 0);
+    });
+
+    return () => {
+      alive = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
-    <div className="section narrow">
-      <span className="eyebrow">MON ESPACE</span>
-
-      <h1>Mon compte</h1>
-
-      <div className="profile-card">
-        <UserRound />
-
-        <h2>{profile?.full_name || 'Utilisateur'}</h2>
-
-        <p>{user?.email}</p>
-
-        <span className="badge">
-          {profile?.role || 'buyer'}
-        </span>
-
-        <small>Compte utilisateur</small>
-      </div>
-
-      <div className="quick-grid">
-        <Link to="/vendeur">
-          <Store />
-          Espace commercial
-        </Link>
-
-        <Link to="/signaler">
-          <Flag />
-          Mes signalements
-        </Link>
-
-        <Link to="/parametres">
-          <Settings />
-          Paramètres
-        </Link>
-      </div>
-    </div>
+    <AuthContext.Provider
+      value={{
+        session,
+        user: session?.user ?? null,
+        profile,
+        loading,
+        profileError,
+        refreshProfile
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => useContext(AuthContext);
