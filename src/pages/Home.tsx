@@ -1,219 +1,162 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight,
-  MapPin,
-  Search,
-  Store,
-  Truck,
-  ShieldCheck,
-  ShoppingBag
+  ArrowRight, Search, SlidersHorizontal, Store, Grid2X2,
+  Flame, MapPin, ImageOff
 } from 'lucide-react';
-
-import {
-  supabase,
-  isSupabaseConfigured
-} from '../lib/supabase';
-
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Product, Shop } from '../types';
 import ProductCard from '../components/ProductCard';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
-  const [q, setQ] = useState('');
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let alive = true;
+    let active = true;
 
-    (async () => {
+    async function loadMarketplace() {
       if (!supabase) {
         setLoading(false);
         return;
       }
 
-      const [p, s] = await Promise.all([
-        supabase
-          .from('products')
-          .select(
-            'id,shop_id,name,description,price,currency,stock,image_url,category,is_active,shops(id,name)'
-          )
-          .eq('is_active', true)
-          .eq('moderation_status', 'visible')
-          .gt('stock', 0)
-          .order('created_at', { ascending: false })
-          .limit(24),
+      try {
+        const [productsResult, shopsResult] = await Promise.all([
+          supabase
+            .from('products')
+            .select('id,shop_id,name,description,price,currency,stock,image_url,category,is_active,shops(id,name)')
+            .eq('is_active', true)
+            .eq('moderation_status', 'visible')
+            .gt('stock', 0)
+            .order('created_at', { ascending: false })
+            .limit(24),
+          supabase
+            .from('shops')
+            .select('id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone,moderation_status')
+            .eq('is_active', true)
+            .eq('moderation_status', 'visible')
+            .order('created_at', { ascending: false })
+            .limit(16)
+        ]);
 
-        supabase
-          .from('shops')
-          .select(
-            'id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone,moderation_status'
-          )
-          .eq('is_active', true)
-          .eq('moderation_status', 'visible')
-          .order('created_at', { ascending: false })
-          .limit(12)
-      ]);
-
-      if (alive) {
-        setProducts((p.data || []) as Product[]);
-        setShops((s.data || []) as Shop[]);
-        setLoading(false);
+        if (!active) return;
+        if (!productsResult.error) setProducts((productsResult.data || []) as Product[]);
+        if (!shopsResult.error) setShops((shopsResult.data || []) as Shop[]);
+      } catch (error) {
+        console.error('Erreur de chargement de la marketplace :', error);
+      } finally {
+        if (active) setLoading(false);
       }
-    })();
+    }
 
-    return () => {
-      alive = false;
-    };
+    void loadMarketplace();
+    return () => { active = false; };
   }, []);
 
-  const filtered = products.filter(product =>
-    (
-      product.name +
-      ' ' +
-      (product.category || '')
-    )
-      .toLowerCase()
-      .includes(q.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    const value = query.trim().toLocaleLowerCase();
+    if (!value) return products;
+    return products.filter(product =>
+      `${product.name} ${product.category || ''}`.toLocaleLowerCase().includes(value)
+    );
+  }, [products, query]);
+
+  const filteredShops = useMemo(() => {
+    const value = query.trim().toLocaleLowerCase();
+    if (!value) return shops;
+    return shops.filter(shop => `${shop.name} ${shop.zone || ''}`.toLocaleLowerCase().includes(value));
+  }, [shops, query]);
 
   return (
-    <div className="nm-wrap">
-      <div className="nm-search">
-        <Search />
-
-        <input
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Rechercher un produit ou une catégorie…"
-        />
-
-        <Link to="/boutiques" className="nm-filter">
-          <ArrowRight />
-        </Link>
+    <div className="market-home">
+      <div className="market-search-row">
+        <label className="market-search">
+          <Search aria-hidden="true" />
+          <input
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder="Rechercher une boutique ou un produit..."
+            aria-label="Rechercher une boutique ou un produit"
+          />
+          <Link to="/boutiques" className="search-filter" aria-label="Voir les filtres et boutiques">
+            <SlidersHorizontal />
+          </Link>
+        </label>
       </div>
 
-      <section className="nm-hero">
-        <div className="nm-slide-copy">
-          <span className="eyebrow">
-            LA MARKETPLACE HAÏTIENNE
-          </span>
-
-          <h1>
-            Le commerce haïtien à portée de main.
-          </h1>
-
-          <p>
-            Achetez, vendez et découvrez les boutiques près de chez vous.
-          </p>
-
-          <Link className="btn btn-orange" to="/boutiques">
-            Explorer les boutiques
-            <ArrowRight />
-          </Link>
+      <section className="market-hero" aria-label="Découvrir NOGAME MARKET">
+        <div className="hero-dots" aria-hidden="true">••••••</div>
+        <div className="hero-copy">
+          <span className="hero-kicker">LE COMMERCE HAÏTIEN, À PORTÉE DE MAIN</span>
+          <h1>Tout ce que vous cherchez, au même endroit.</h1>
+          <p>Découvrez des boutiques et des produits proposés par des vendeurs en Haïti.</p>
+          <Link to="/boutiques" className="hero-cta">Explorer les boutiques <ArrowRight /></Link>
         </div>
+        <img className="hero-art" src="/hero-market.svg" alt="Illustration d'un panier de courses, de sacs et d'un téléphone" />
+        <div className="hero-pagination" aria-hidden="true"><i /><i /><i /></div>
       </section>
 
-      <div className="nm-quick">
-        <Link to="/boutiques">
-          <Store />
-          <b>Boutiques</b>
-        </Link>
+      <section className="market-shortcuts" aria-label="Accès rapides">
+        <Link to="/boutiques"><Store /><b>Boutiques</b></Link>
+        <a href="#produits"><Grid2X2 /><b>Catégories</b></a>
+        <a href="#produits"><Flame /><b>Populaires</b></a>
+        <Link to="/boutiques"><MapPin /><b>Près de moi</b></Link>
+      </section>
 
-        <Link to="/inscription?role=merchant">
-          <ShoppingBag />
-          <b>Devenir vendeur</b>
-        </Link>
-
-        <Link to="/inscription?role=wholesaler">
-          <Truck />
-          <b>Grossiste</b>
-        </Link>
-
-        <Link to="/assistance">
-          <ShieldCheck />
-          <b>Assistance</b>
-        </Link>
-      </div>
-
-      <div className="nm-title">
-        <h2>
-          <MapPin />
-          Boutiques
-        </h2>
-
-        <Link to="/boutiques">
-          Tout voir
-          <ArrowRight />
-        </Link>
-      </div>
-
-      {shops.length > 0 ? (
-        <div className="shop-grid">
-          {shops.map(shop => (
-            <Link
-              className="shop-card"
-              to={`/boutique/${shop.id}`}
-              key={shop.id}
-            >
-              {shop.logo_url ? (
-                <img src={shop.logo_url} alt={shop.name} />
-              ) : (
-                <span className="shop-placeholder">
-                  <Store />
-                </span>
-              )}
-
-              <b>{shop.name}</b>
-
-              <small>
-                {shop.zone || 'Boutique locale'}
-              </small>
-            </Link>
-          ))}
+      <section className="market-section" id="boutiques">
+        <div className="market-section-heading">
+          <h2><span className="heading-marker" />Boutiques populaires</h2>
+          <Link to="/boutiques">Voir tout <ArrowRight /></Link>
         </div>
-      ) : (
-        <div className="empty-state">
-          {loading
-            ? 'Chargement des boutiques…'
-            : 'Aucune boutique publiée pour le moment.'}
-        </div>
-      )}
+        {filteredShops.length > 0 ? (
+          <div className="shop-carousel">
+            {filteredShops.map(shop => (
+              <article className="popular-shop-card" key={shop.id}>
+                <Link to={`/boutique/${shop.id}`} className="popular-shop-main">
+                  {shop.logo_url ? (
+                    <img className="popular-shop-logo" src={shop.logo_url} alt={`Logo ${shop.name}`} loading="lazy" />
+                  ) : (
+                    <span className="popular-shop-placeholder"><Store /></span>
+                  )}
+                  <b>{shop.name}</b>
+                  <small>{shop.zone || 'Boutique en Haïti'}</small>
+                </Link>
+                <Link to={`/boutique/${shop.id}`} className="shop-follow-button">Voir la boutique</Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="market-empty">
+            <Store />
+            <b>{loading ? 'Chargement des boutiques…' : 'Aucune boutique disponible pour le moment.'}</b>
+            <span>Les boutiques actives apparaîtront ici dès qu'elles seront publiées.</span>
+          </div>
+        )}
+      </section>
 
-      <div className="nm-title">
-        <h2>
-          <ShoppingBag />
-          Produits disponibles
-        </h2>
-
-        <span className="muted">
-          Données réelles
-        </span>
-      </div>
-
-      {!isSupabaseConfigured && (
-        <div className="notice">
-          Configure Supabase dans .env.local pour afficher les produits réels.
+      <section className="market-section" id="produits">
+        <div className="market-section-heading">
+          <h2><span className="heading-marker" />Produits tendance</h2>
+          <Link to="/boutiques">Voir tout <ArrowRight /></Link>
         </div>
-      )}
-
-      {filtered.length > 0 ? (
-        <div className="product-grid">
-          {filtered.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="empty-state">
-          {loading
-            ? 'Chargement des produits…'
-            : 'Aucun produit disponible pour le moment.'}
-        </div>
-      )}
+        {!isSupabaseConfigured && (
+          <div className="market-empty"><ImageOff /><b>Connexion à la marketplace indisponible.</b><span>La configuration Supabase est nécessaire pour afficher les produits.</span></div>
+        )}
+        {filteredProducts.length > 0 ? (
+          <div className="trending-products">
+            {filteredProducts.map(product => <ProductCard key={product.id} product={product} />)}
+          </div>
+        ) : isSupabaseConfigured ? (
+          <div className="market-empty">
+            <ImageOff />
+            <b>{loading ? 'Chargement des produits…' : 'Aucun produit disponible pour le moment.'}</b>
+            <span>Les produits actifs avec du stock apparaîtront dans cette section.</span>
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }
