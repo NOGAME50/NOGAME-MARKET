@@ -1,10 +1,6 @@
-import type { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.nogame.market',
-  appName: 'NOGAME MARKET',
-  webDir: 'dist',
-  bundledWebRuntime: false
-};
-
-export default config;
+{
+  "appId": "com.nogame.market",
+  "appName": "NOGAME MARKET",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
