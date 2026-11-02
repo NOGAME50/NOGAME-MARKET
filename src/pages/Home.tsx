@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ShieldCheck, Truck, Headphones, Search, Store, ShoppingBag, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ArrowRight, Flame, MapPin, Search, ShoppingBag, SlidersHorizontal, Store } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import ShopCard from "../components/ShopCard";
+import ShopRound from "../components/ShopRound";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { useAuth } from "../state/AuthContext";
 import { autoPosition, getPosition, rankShops } from "../lib/utils";
 import type { Coords } from "../lib/utils";
 import type { Product, Shop } from "../types";
+
+const slides = [
+  { image: "/banner-1.jpg", title: "Le commerce haïtien à portée de main", text: "Achète et vends près de chez toi.", to: "/boutiques", cta: "Explorer" },
+  { image: "", title: "Boutiques près de toi", text: "Trouve les vendeurs autour de toi, avec leur distance exacte.", to: "/boutiques", cta: "Voir les boutiques" },
+  { image: "", title: "Vends gratuitement", text: "Ouvre ta boutique, ajoute tes produits et reçois les appels.", to: "/vendeur", cta: "Ouvrir ma boutique" }
+];
 
 export default function Home() {
   const { profile } = useAuth();
@@ -19,7 +25,11 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [here, setHere] = useState<Coords | null>(null);
   const [geoMsg, setGeoMsg] = useState("");
-  const [locating, setLocating] = useState(false);
+  const [slide, setSlide] = useState(0);
+  const [bannerBroken, setBannerBroken] = useState(false);
+  const [showCats, setShowCats] = useState(false);
+  const [cat, setCat] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -28,9 +38,9 @@ export default function Home() {
       const [pr, sh] = await Promise.all([
         supabase.from("products")
           .select("id,shop_id,name,description,price,currency,stock,image_url,category,shops(id,name)")
-          .eq("is_active", true).gt("stock", 0).order("created_at", { ascending: false }).limit(24),
+          .eq("is_active", true).gt("stock", 0).order("created_at", { ascending: false }).limit(48),
         supabase.from("shops")
-          .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude")
+          .select("id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone")
           .eq("is_active", true).order("created_at", { ascending: false }).limit(300)
       ]);
       if (!active) return;
@@ -44,51 +54,67 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    const t = window.setInterval(() => setSlide(i => (i + 1) % slides.length), 5000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const goTo = (id: string) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const locate = async () => {
-    setLocating(true); setGeoMsg("");
-    try { setHere(await getPosition()); }
+    setGeoMsg("");
+    try { setHere(await getPosition()); goTo("boutiques"); }
     catch (e) { setGeoMsg(e instanceof Error ? e.message : "Position indisponible."); }
-    setLocating(false);
   };
 
   const q = query.trim().toLowerCase();
-  const filtered = products.filter(p => `${p.name} ${p.category || ""} ${p.shops?.name || ""}`.toLowerCase().includes(q));
-  const ranked = useMemo(() => rankShops(shops.filter(s => s.name.toLowerCase().includes(q)), here), [shops, q, here]);
+  const categories = useMemo(() => Array.from(new Set(products.map(p => p.category).filter((c): c is string => !!c))), [products]);
+  const filtered = products.filter(p => (!cat || p.category === cat) && `${p.name} ${p.category || ""} ${p.shops?.name || ""}`.toLowerCase().includes(q));
+  const ranked = useMemo(() => rankShops(shops.filter(s => (s.name + " " + (s.zone || "")).toLowerCase().includes(q)), here), [shops, q, here]);
 
-  return <div className="home-page">
-    <section className="hero">
-      <div className="hero-copy">
-        <span className="hero-tag"><span className="live-dot"/> LA MARKETPLACE HAÏTIENNE</span>
-        <h1>Le commerce haïtien,<br/><em>à portée de main.</em></h1>
-        <p>Découvre des produits proposés par des boutiques haïtiennes. Achète et développe ton activité au même endroit.</p>
-        <div className="hero-actions"><Link to="/boutiques" className="btn btn-primary">Explorer <ArrowRight size={18}/></Link>{isSeller ? <Link to="/vendeur" className="btn btn-light">Mon espace vendeur</Link> : <Link to="/vendeur" className="btn btn-light">Ouvrir une boutique</Link>}</div>
-        <div className="hero-trust"><span><ShieldCheck/>Comptes sécurisés</span><span><Store/>Vendeurs haïtiens</span></div>
-      </div>
-      <div className="hero-art" aria-hidden="true"><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><div className="hero-cube"><ShoppingBag size={82}/><b>NM</b></div><div className="float-card float-one"><Store/> Boutiques locales</div><div className="float-card float-two"><Truck/> Commerce connecté</div></div>
-    </section>
+  return <div className="nm-wrap">
+    <label className="nm-search"><Search/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une boutique ou un produit…"/>
+      <button type="button" className={`nm-filter ${showCats ? "on" : ""}`} onClick={() => setShowCats(v => !v)} aria-label="Filtres"><SlidersHorizontal/></button></label>
 
-    <section className="section" style={{ marginBottom: 20 }}>
-      <div className="section-heading"><div><span className="eyebrow">PRÈS DE TOI</span><h2>Boutiques</h2><p>{here ? "Les plus proches de toi en premier." : "Active ta position pour voir les boutiques les plus proches."}</p></div><Link to="/boutiques" className="text-link">Toutes les boutiques <ArrowRight size={16}/></Link></div>
-      <label className="search-box"><Search/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une boutique ou un produit…"/></label>
-      <button className="btn btn-light" style={{ border: "1px solid #dfe6ee", marginBottom: 8 }} onClick={() => void locate()} disabled={locating}><MapPin size={16}/>{locating ? "Recherche de ta position…" : here ? "Position activée" : "Boutiques près de moi"}</button>
-      {geoMsg && <div className="notice notice-error">{geoMsg}</div>}
-      {!isSupabaseConfigured && <div className="notice"><b>Connexion à configurer</b><span>Ajoute les clés publiques Supabase pour afficher les boutiques réelles.</span></div>}
-      {error && <div className="notice notice-error">{error}</div>}
-      {loading ? <div className="empty-state">Chargement…</div> : ranked.length
-        ? ranked.slice(0, 6).map(x => <ShopCard key={x.shop.id} shop={x.shop} km={x.km}/>)
-        : <div className="empty-state"><Store/><b>Aucune boutique trouvée</b><span>Les boutiques apparaîtront ici dès qu’un vendeur en aura créé une.</span></div>}
-    </section>
+    {showCats && <div className="nm-cats">
+      <button className={!cat ? "on" : ""} onClick={() => setCat(null)}>Toutes</button>
+      {categories.map(c => <button key={c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>{c}</button>)}
+      {!categories.length && <span className="muted">Aucune catégorie pour le moment.</span>}
+    </div>}
 
-    <section className="benefits">
-      <div><ShieldCheck/><b>Une plateforme centralisée</b><span>Les vendeurs et acheteurs au même endroit.</span></div>
-      <div><Truck/><b>Suivi des commandes</b><span>Une base pour organiser les livraisons.</span></div>
-      <div><Headphones/><b>Assistance</b><span>Un espace d’aide pour les utilisateurs.</span></div>
-    </section>
+    <div className="nm-hero">
+      {slides.map((s, i) => {
+        const hasImg = !!s.image && !bannerBroken;
+        return <Link key={i} to={s.to} className={`nm-slide ${slide === i ? "on" : ""}`}>
+          {hasImg && <img src={s.image} alt="" onError={() => setBannerBroken(true)}/>}
+          {!hasImg && <div className="nm-slide-copy"><h2>{s.title}</h2><p>{s.text}</p><span>{s.cta} <ArrowRight size={14}/></span></div>}
+        </Link>;
+      })}
+      <div className="nm-dots">{slides.map((_, i) => <button key={i} className={slide === i ? "on" : ""} onClick={() => setSlide(i)} aria-label={"Bannière " + (i + 1)}/>)}</div>
+    </div>
 
-    <section className="section products-section">
-      <div className="section-heading"><div><span className="eyebrow">DÉCOUVRIR</span><h2>Produits disponibles</h2><p>Les articles publiés par les boutiques.</p></div></div>
-      {loading ? <div className="empty-state">Chargement des produits…</div> : filtered.length ? <div className="product-grid">{filtered.map(p => <ProductCard key={p.id} product={p}/>)}</div> : <div className="empty-state"><ShoppingBag/><b>Aucun produit disponible pour le moment</b><span>Les produits apparaîtront ici lorsqu’une boutique en aura publié.</span></div>}
-    </section>
-    {!isSeller && <section className="seller-banner"><div><span className="eyebrow">TU ES VENDEUR ?</span><h2>Ouvre ta boutique gratuitement.</h2><p>Crée ton espace vendeur, ajoute tes produits et reçois les appels et messages de tes clients.</p></div><Link to="/vendeur" className="btn btn-primary">Devenir vendeur <ArrowRight/></Link></section>}
+    <div className="nm-quick">
+      <Link to="/boutiques"><Store/>Boutiques</Link>
+      <button onClick={() => setShowCats(v => !v)}><ShoppingBag/>Catégories</button>
+      <button className="fire" onClick={() => goTo("tendance")}><Flame/>Populaires</button>
+      <button onClick={() => void locate()}><MapPin/>Près de moi</button>
+    </div>
+
+    {geoMsg && <div className="notice notice-error">{geoMsg}</div>}
+    {!isSupabaseConfigured && <div className="notice"><b>Connexion à configurer</b><span>Ajoute les clés publiques Supabase pour afficher les boutiques réelles.</span></div>}
+    {error && <div className="notice notice-error">{error}</div>}
+
+    <div className="nm-title" id="boutiques"><h2>{here ? "Boutiques près de toi" : "Boutiques populaires"}</h2><Link to="/boutiques">Voir tout <ArrowRight size={16}/></Link></div>
+    {loading ? <div className="empty-state">Chargement…</div> : ranked.length
+      ? <div className="nm-hscroll">{ranked.slice(0, 12).map(x => <ShopRound key={x.shop.id} shop={x.shop} km={x.km}/>)}</div>
+      : <div className="empty-state"><Store/><b>Aucune boutique trouvée</b><span>Les boutiques apparaîtront ici dès qu’un vendeur en aura créé une.</span></div>}
+
+    <div className="nm-title" id="tendance"><h2>Produits tendance</h2><button onClick={() => setShowAll(v => !v)}>{showAll ? "Réduire" : "Voir tout"} <ArrowRight size={16}/></button></div>
+    {loading ? <div className="empty-state">Chargement des produits…</div> : filtered.length
+      ? (showAll
+          ? <div className="product-grid">{filtered.map(p => <ProductCard key={p.id} product={p}/>)}</div>
+          : <div className="nm-hscroll">{filtered.slice(0, 12).map(p => <ProductCard key={p.id} product={p}/>)}</div>)
+      : <div className="empty-state"><ShoppingBag/><b>Aucun produit disponible pour le moment</b><span>Les produits apparaîtront ici lorsqu’une boutique en aura publié.</span></div>}
+
+    {!isSeller && <section className="seller-banner" style={{ width: "100%", margin: "30px 0 20px" }}><div><span className="eyebrow">TU ES VENDEUR ?</span><h2>Ouvre ta boutique gratuitement.</h2><p>Crée ton espace vendeur, ajoute tes produits et reçois les appels et messages de tes clients.</p></div><Link to="/vendeur" className="btn btn-primary">Devenir vendeur <ArrowRight/></Link></section>}
   </div>;
 }
