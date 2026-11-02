@@ -38,7 +38,7 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  const refreshProfile = async () => {
+  const refreshProfile = async (): Promise<void> => {
     if (!supabase) {
       setProfile(null);
       setProfileError('Supabase n’est pas configuré.');
@@ -63,12 +63,16 @@ export function AuthProvider({
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id,full_name,role,phone,account_status,trust_level')
+        .select('id,full_name,role,phone,created_at')
         .eq('id', current.user.id)
         .maybeSingle();
 
       if (error) {
-        console.error('Erreur de récupération du profil :', error);
+        console.error(
+          'Erreur de récupération du profil :',
+          error
+        );
+
         setProfile(null);
         setProfileError(error.message);
         return;
@@ -113,7 +117,10 @@ export function AuthProvider({
           error
         } = await supabase.auth.getSession();
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
+
         if (!alive) return;
 
         setSession(current);
@@ -122,17 +129,25 @@ export function AuthProvider({
           await refreshProfile();
         } else {
           setProfile(null);
+          setProfileError(null);
         }
 
       } catch (error) {
-        console.error('Initialisation AuthContext :', error);
+        console.error(
+          'Initialisation AuthContext :',
+          error
+        );
+
         setProfileError(
           error instanceof Error
             ? error.message
             : 'Impossible de vérifier la session.'
         );
+
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+        }
       }
     };
 
@@ -140,19 +155,21 @@ export function AuthProvider({
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
+    } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        setSession(nextSession);
 
-      if (!nextSession) {
-        setProfile(null);
-        setProfileError(null);
-        return;
+        if (!nextSession) {
+          setProfile(null);
+          setProfileError(null);
+          return;
+        }
+
+        window.setTimeout(() => {
+          void refreshProfile();
+        }, 0);
       }
-
-      window.setTimeout(() => {
-        void refreshProfile();
-      }, 0);
-    });
+    );
 
     return () => {
       alive = false;
