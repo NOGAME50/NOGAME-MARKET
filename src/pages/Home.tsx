@@ -20,7 +20,7 @@ import ProductCard from '../components/ProductCard';
 const heroSlides = [
   {
     image: '/hero-market-1.png',
-    alt: 'NOGAME MARKET : votre marketplace de confiance en Haïti',
+    alt: 'NOGAME MARKET : votre marketplace en Haïti',
     link: '/boutiques'
   },
   {
@@ -30,12 +30,12 @@ const heroSlides = [
   },
   {
     image: '/hero-market-3.png',
-    alt: 'Découvrez les produits populaires et tendances',
+    alt: 'Découvrez les produits populaires',
     link: '/boutiques'
   },
   {
     image: '/hero-market-4.png',
-    alt: 'Grossistes et bonnes affaires sur NOGAME MARKET',
+    alt: 'Grossistes et bonnes affaires',
     link: '/boutiques'
   }
 ];
@@ -49,30 +49,31 @@ export default function Home() {
   const [currentHero, setCurrentHero] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  // Carrousel automatique
   useEffect(() => {
     if (paused) return;
 
     const timer = window.setInterval(() => {
-      setCurrentHero(previous => (previous + 1) % heroSlides.length);
+      setCurrentHero(
+        previous => (previous + 1) % heroSlides.length
+      );
     }, 5000);
 
     return () => window.clearInterval(timer);
   }, [paused]);
 
   const previousHero = () => {
-    setCurrentHero(previous =>
-      (previous - 1 + heroSlides.length) % heroSlides.length
+    setCurrentHero(
+      previous =>
+        (previous - 1 + heroSlides.length) % heroSlides.length
     );
   };
 
   const nextHero = () => {
-    setCurrentHero(previous =>
-      (previous + 1) % heroSlides.length
+    setCurrentHero(
+      previous => (previous + 1) % heroSlides.length
     );
   };
 
-  // Chargement des données Supabase
   useEffect(() => {
     let active = true;
 
@@ -82,42 +83,85 @@ export default function Home() {
         return;
       }
 
+      setLoading(true);
+
       try {
         const [productsResult, shopsResult] = await Promise.all([
           supabase
             .from('products')
-            .select('id,shop_id,name,description,price,currency,stock,image_url,category,is_active,shops(id,name)')
+            .select(`
+              id,
+              shop_id,
+              name,
+              description,
+              price,
+              currency,
+              stock,
+              image_url,
+              category,
+              is_active,
+              shops (
+                id,
+                name
+              )
+            `)
             .eq('is_active', true)
-            .eq('moderation_status', 'visible')
             .gt('stock', 0)
             .order('created_at', { ascending: false })
             .limit(24),
 
           supabase
             .from('shops')
-            .select('id,owner_id,name,description,logo_url,is_active,phone,latitude,longitude,zone,moderation_status')
+            .select(`
+              id,
+              owner_id,
+              name,
+              description,
+              logo_url,
+              is_active,
+              phone,
+              latitude,
+              longitude,
+              zone
+            `)
             .eq('is_active', true)
-            .eq('moderation_status', 'visible')
             .order('created_at', { ascending: false })
             .limit(16)
         ]);
 
         if (!active) return;
 
-        if (!productsResult.error) {
-          setProducts((productsResult.data || []) as Product[]);
+        if (productsResult.error) {
+          console.error(
+            'Erreur chargement produits :',
+            productsResult.error
+          );
+        } else {
+          setProducts(
+            (productsResult.data || []) as Product[]
+          );
         }
 
-        if (!shopsResult.error) {
-          setShops((shopsResult.data || []) as Shop[]);
+        if (shopsResult.error) {
+          console.error(
+            'Erreur chargement boutiques :',
+            shopsResult.error
+          );
+        } else {
+          setShops(
+            (shopsResult.data || []) as Shop[]
+          );
         }
+
       } catch (error) {
         console.error(
-          'Erreur de chargement de la marketplace :',
+          'Erreur marketplace :',
           error
         );
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -155,7 +199,6 @@ export default function Home() {
   return (
     <div className="market-home">
 
-      {/* RECHERCHE */}
       <div className="market-search-row">
         <label className="market-search">
           <Search aria-hidden="true" />
@@ -177,7 +220,6 @@ export default function Home() {
         </label>
       </div>
 
-      {/* CARROUSEL HERO */}
       <section
         className="market-hero-carousel"
         aria-label="Découvrir NOGAME MARKET"
@@ -185,14 +227,16 @@ export default function Home() {
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
         onBlur={event => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+          if (
+            !event.currentTarget.contains(
+              event.relatedTarget as Node
+            )
+          ) {
             setPaused(false);
           }
         }}
       >
-
         <div className="hero-slides">
-
           {heroSlides.map((slide, index) => (
             <Link
               key={slide.image}
@@ -210,7 +254,6 @@ export default function Home() {
               />
             </Link>
           ))}
-
         </div>
 
         <button
@@ -239,14 +282,14 @@ export default function Home() {
               className={index === currentHero ? 'active' : ''}
               onClick={() => setCurrentHero(index)}
               aria-label={`Afficher la bannière ${index + 1}`}
-              aria-current={index === currentHero ? 'true' : undefined}
+              aria-current={
+                index === currentHero ? 'true' : undefined
+              }
             />
           ))}
         </div>
-
       </section>
 
-      {/* ACCÈS RAPIDES */}
       <section
         className="market-shortcuts"
         aria-label="Accès rapides"
@@ -272,9 +315,7 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* BOUTIQUES POPULAIRES */}
       <section className="market-section" id="boutiques">
-
         <div className="market-section-heading">
           <h2>
             <span className="heading-marker" />
@@ -288,7 +329,6 @@ export default function Home() {
 
         {filteredShops.length > 0 ? (
           <div className="shop-carousel">
-
             {filteredShops.map(shop => (
               <article
                 className="popular-shop-card"
@@ -326,7 +366,6 @@ export default function Home() {
                 </Link>
               </article>
             ))}
-
           </div>
         ) : (
           <div className="market-empty">
@@ -339,16 +378,13 @@ export default function Home() {
             </b>
 
             <span>
-              Les boutiques actives apparaîtront ici dès qu'elles seront publiées.
+              Les boutiques actives apparaîtront ici dès leur publication.
             </span>
           </div>
         )}
-
       </section>
 
-      {/* PRODUITS TENDANCE */}
       <section className="market-section" id="produits">
-
         <div className="market-section-heading">
           <h2>
             <span className="heading-marker" />
@@ -392,13 +428,11 @@ export default function Home() {
             </b>
 
             <span>
-              Les produits actifs avec du stock apparaîtront dans cette section.
+              Les produits actifs avec du stock apparaîtront ici.
             </span>
           </div>
         ) : null}
-
       </section>
-
     </div>
   );
-                           }
+}
