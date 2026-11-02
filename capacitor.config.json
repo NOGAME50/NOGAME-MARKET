@@ -1,6 +1,5 @@
 {
   "appId": "com.nogame.market",
   "appName": "NOGAME MARKET",
-  "webDir": "dist",
-  "bundledWebRuntime": false
+  "webDir": "dist"
 }
