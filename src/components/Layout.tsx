@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
-import { Home, Store, ShoppingBag, UserRound, LogIn, LogOut, Menu, X, Package, ShieldCheck } from "lucide-react";
+import { Home, Store, ShoppingBag, UserRound, LogIn, LogOut, Menu, X, Package, ShieldCheck, Bell } from "lucide-react";
 import { useState } from "react";
 import Brand from "./Brand";
 import { useAuth } from "../state/AuthContext";
@@ -14,7 +14,10 @@ export default function Layout() {
   return <div className="app-shell">
     <header className="topbar">
       <Brand />
-      <button className="mobile-menu icon-button" onClick={() => setOpen(!open)} aria-label="Ouvrir le menu">{open ? <X/> : <Menu/>}</button>
+      <div className="topbar-actions">
+        <Link to="/parametres" className="nm-icon-btn nm-bell" aria-label="Notifications"><Bell/></Link>
+        <button className="mobile-menu icon-button" onClick={() => setOpen(!open)} aria-label="Ouvrir le menu">{open ? <X/> : <Menu/>}</button>
+      </div>
       <nav className={`main-nav ${open ? "nav-open" : ""}`}>
         <NavLink to="/" onClick={close}><Home/>Accueil</NavLink>
         <NavLink to="/boutiques" onClick={close}><Store/>Boutiques</NavLink>
