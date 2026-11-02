@@ -1,2 +1,126 @@
-import{useEffect,useState}from'react';import{useParams,Link}from'react-router-dom';import{ImageOff,Store,Flag}from'lucide-react';import{supabase}from'../lib/supabase';import type{Product}from'../types';
-export default function ProductDetail(){const{id}=useParams();const[p,setP]=useState<Product|null>(null);const[loading,setLoading]=useState(true);useEffect(()=>{let alive=true;(async()=>{if(!supabase||!id){setLoading(false);return;}const{data}=await supabase.from('products').select('id,shop_id,name,description,price,currency,stock,image_url,category,is_active,shops(id,name)').eq('id',id).eq('is_active',true).eq('moderation_status','visible').maybeSingle();if(alive){setP(data as Product|null);setLoading(false);}})();return()=>{alive=false;};},[id]);if(loading)return <div className="section">Chargement…</div>;if(!p)return <div className="section empty-state">Produit introuvable ou indisponible.</div>;return <div className="section detail-grid"><div className="detail-image">{p.image_url?<img src={p.image_url} alt={p.name}/>:<div className="image-empty"><ImageOff/>Image non disponible</div>}</div><div><span className="eyebrow">{p.category||'PRODUIT'}</span><h1>{p.name}</h1><div className="product-price detail-price">{Number(p.price).toLocaleString('fr-HT')} {p.currency||'HTG'}</div><p>{p.description||'Aucune description fournie.'}</p><p className="muted">{p.stock>0?`${p.stock} disponible(s)`:'Rupture de stock'}</p>{p.shops&&<Link className="btn btn-light" to={`/boutique/${p.shop_id}`}><Store/> Voir la boutique {p.shops.name}</Link>}<p><Link to={`/signaler?type=product&id=${p.id}`}><Flag size={15}/> Signaler ce produit</Link></p></div></div>;}
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+
+import {
+  ImageOff,
+  Store,
+  Flag
+} from 'lucide-react';
+
+import { supabase } from '../lib/supabase';
+import type { Product } from '../types';
+
+export default function ProductDetail() {
+  const { id } = useParams();
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      if (!supabase || !id) {
+        setLoading(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('products')
+        .select(
+          'id,shop_id,name,description,price,currency,stock,image_url,category,is_active,shops(id,name)'
+        )
+        .eq('id', id)
+        .eq('is_active', true)
+        .eq('moderation_status', 'visible')
+        .maybeSingle();
+
+      if (alive) {
+        setProduct(data as Product | null);
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="section">
+        Chargement…
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="section empty-state">
+        Produit introuvable ou indisponible.
+      </div>
+    );
+  }
+
+  const shop = product.shops?.[0];
+
+  return (
+    <div className="section detail-grid">
+      <div className="detail-image">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+          />
+        ) : (
+          <div className="image-empty">
+            <ImageOff />
+            Image non disponible
+          </div>
+        )}
+      </div>
+
+      <div>
+        <span className="eyebrow">
+          {product.category || 'PRODUIT'}
+        </span>
+
+        <h1>{product.name}</h1>
+
+        <div className="product-price detail-price">
+          {Number(product.price).toLocaleString('fr-HT')}{' '}
+          {product.currency || 'HTG'}
+        </div>
+
+        <p>
+          {product.description || 'Aucune description fournie.'}
+        </p>
+
+        <p className="muted">
+          {product.stock > 0
+            ? `${product.stock} disponible(s)`
+            : 'Rupture de stock'}
+        </p>
+
+        {shop && (
+          <Link
+            className="btn btn-light"
+            to={`/boutique/${product.shop_id}`}
+          >
+            <Store />
+            Voir la boutique {shop.name}
+          </Link>
+        )}
+
+        <p>
+          <Link
+            to={`/signaler?type=product&id=${product.id}`}
+          >
+            <Flag size={15} />
+            Signaler ce produit
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
