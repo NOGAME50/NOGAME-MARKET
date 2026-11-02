@@ -1,0 +1,754 @@
+/* =====================================================
+   NOGAME MARKET V4 — PAGE D'ACCUEIL
+   Design : Bleu marine / Orange / Blanc / Turquoise
+   ===================================================== */
+
+.market-home {
+  --nm-navy: #101d38;
+  --nm-blue: #1769d2;
+  --nm-orange: #f28c28;
+  --nm-orange-dark: #e87512;
+  --nm-turquoise: #20b8b0;
+  --nm-background: #f3f6fa;
+  --nm-white: #ffffff;
+  --nm-text: #17243b;
+  --nm-muted: #718096;
+  --nm-border: #e6ebf2;
+
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  color: var(--nm-text);
+  box-sizing: border-box;
+  background: var(--nm-background);
+}
+
+.market-home *,
+.market-home *::before,
+.market-home *::after {
+  box-sizing: border-box;
+}
+
+.market-home a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.market-home button,
+.market-home input {
+  font: inherit;
+}
+
+/* =====================================================
+   RECHERCHE
+   ===================================================== */
+
+.market-search-row {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.market-search {
+  width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid var(--nm-border);
+  border-radius: 15px;
+  background: var(--nm-white);
+  box-shadow: 0 3px 12px rgba(16, 29, 56, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.market-search:focus-within {
+  border-color: var(--nm-blue);
+  box-shadow: 0 0 0 3px rgba(23, 105, 210, 0.1);
+}
+
+.market-search > svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  color: var(--nm-muted);
+}
+
+.market-search input {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  border: none;
+  outline: none;
+  color: var(--nm-text);
+  background: transparent;
+  font-size: 14px;
+}
+
+.market-search input::placeholder {
+  color: #9aa5b5;
+}
+
+.search-filter {
+  width: 39px;
+  height: 39px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--nm-white);
+  background: var(--nm-orange);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.search-filter:hover {
+  background: var(--nm-orange-dark);
+  transform: scale(1.04);
+}
+
+.search-filter svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* =====================================================
+   HERO CARROUSEL
+   ===================================================== */
+
+.market-hero-carousel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 170px;
+  max-height: 440px;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 19px;
+  background: #071b50;
+  box-shadow: 0 8px 24px rgba(16, 29, 56, 0.13);
+}
+
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.025);
+  transition:
+    opacity 700ms ease,
+    transform 1200ms ease,
+    visibility 700ms ease;
+  pointer-events: none;
+}
+
+.hero-slide.active {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.hero-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Flèches */
+
+.hero-arrow {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  color: white;
+  background: rgba(7, 27, 80, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hero-arrow:hover {
+  background: var(--nm-orange);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.hero-arrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hero-arrow-left {
+  left: 12px;
+}
+
+.hero-arrow-right {
+  right: 12px;
+}
+
+/* Pagination */
+
+.hero-pagination {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transform: translateX(-50%);
+}
+
+.hero-pagination button {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition:
+    width 250ms ease,
+    background 250ms ease;
+}
+
+.hero-pagination button.active {
+  width: 26px;
+  background: var(--nm-orange);
+}
+
+/* =====================================================
+   ACCÈS RAPIDES
+   ===================================================== */
+
+.market-shortcuts {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 23px 0 30px;
+}
+
+.market-shortcuts a {
+  min-width: 0;
+  min-height: 95px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 5px;
+  border: 1px solid var(--nm-border);
+  border-radius: 15px;
+  color: var(--nm-navy);
+  background: var(--nm-white);
+  box-shadow: 0 3px 12px rgba(16, 29, 56, 0.035);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.market-shortcuts a:hover {
+  transform: translateY(-3px);
+  border-color: rgba(242, 140, 40, 0.5);
+  box-shadow: 0 7px 18px rgba(16, 29, 56, 0.08);
+}
+
+.market-shortcuts svg {
+  width: 25px;
+  height: 25px;
+  color: var(--nm-orange);
+  stroke-width: 2.2;
+}
+
+.market-shortcuts b {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--nm-navy);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =====================================================
+   SECTIONS
+   ===================================================== */
+
+.market-section {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 34px;
+  scroll-margin-top: 90px;
+}
+
+.market-section-heading {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.market-section-heading h2 {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: var(--nm-navy);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.heading-marker {
+  width: 5px;
+  height: 23px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: var(--nm-orange);
+}
+
+.market-section-heading > a {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--nm-blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.market-section-heading > a:hover {
+  color: var(--nm-orange-dark);
+}
+
+.market-section-heading > a svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* =====================================================
+   BOUTIQUES POPULAIRES
+   ===================================================== */
+
+.shop-carousel {
+  width: 100%;
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 12px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.shop-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+
+.shop-carousel::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+.popular-shop-card {
+  width: 175px;
+  min-width: 175px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 12px;
+  border: 1px solid var(--nm-border);
+  border-radius: 17px;
+  background: var(--nm-white);
+  box-shadow: 0 3px 12px rgba(16, 29, 56, 0.035);
+  scroll-snap-align: start;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.popular-shop-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(16, 29, 56, 0.08);
+}
+
+.popular-shop-main {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.popular-shop-logo,
+.popular-shop-placeholder {
+  width: 65px;
+  height: 65px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  margin-bottom: 11px;
+  border: 2px solid #f0f3f8;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f3f6fa;
+}
+
+.popular-shop-placeholder svg {
+  width: 27px;
+  height: 27px;
+  color: var(--nm-blue);
+}
+
+.popular-shop-main b {
+  width: 100%;
+  overflow: hidden;
+  color: var(--nm-navy);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popular-shop-main small {
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--nm-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-follow-button {
+  width: 100%;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 8px;
+  border-radius: 9px;
+  color: white !important;
+  background: var(--nm-orange);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.shop-follow-button:hover {
+  background: var(--nm-orange-dark);
+}
+
+/* =====================================================
+   PRODUITS TENDANCE
+   ===================================================== */
+
+.trending-products {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+/*
+   Les règles suivantes stylisent les cartes courantes
+   de ProductCard sans imposer une structure interne
+   qui pourrait être différente dans ton composant.
+*/
+
+.trending-products > * {
+  min-width: 0;
+}
+
+/* =====================================================
+   ÉTATS VIDES / CHARGEMENT
+   ===================================================== */
+
+.market-empty {
+  width: 100%;
+  min-height: 155px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 24px 16px;
+  border: 1px dashed #d6deea;
+  border-radius: 16px;
+  background: var(--nm-white);
+  text-align: center;
+}
+
+.market-empty > svg {
+  width: 31px;
+  height: 31px;
+  color: var(--nm-orange);
+}
+
+.market-empty b {
+  color: var(--nm-navy);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.market-empty span {
+  max-width: 420px;
+  color: var(--nm-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   TABLETTES
+   ===================================================== */
+
+@media (max-width: 900px) {
+  .market-home {
+    padding: 14px;
+  }
+
+  .trending-products {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .market-hero-carousel {
+    border-radius: 16px;
+  }
+}
+
+/* =====================================================
+   MOBILES
+   ===================================================== */
+
+@media (max-width: 600px) {
+  .market-home {
+    padding: 11px;
+  }
+
+  .market-search-row {
+    margin-bottom: 15px;
+  }
+
+  .market-search {
+    min-height: 49px;
+    gap: 9px;
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+
+  .market-search input {
+    height: 46px;
+    font-size: 12px;
+  }
+
+  .market-search > svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .search-filter {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .market-hero-carousel {
+    min-height: 150px;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+  }
+
+  .hero-arrow {
+    width: 31px;
+    height: 31px;
+  }
+
+  .hero-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .hero-arrow-left {
+    left: 6px;
+  }
+
+  .hero-arrow-right {
+    right: 6px;
+  }
+
+  .hero-pagination {
+    bottom: 8px;
+    gap: 6px;
+  }
+
+  .hero-pagination button {
+    width: 7px;
+    height: 7px;
+  }
+
+  .hero-pagination button.active {
+    width: 19px;
+  }
+
+  .market-shortcuts {
+    gap: 8px;
+    margin: 17px 0 25px;
+  }
+
+  .market-shortcuts a {
+    min-height: 79px;
+    gap: 7px;
+    padding: 9px 3px;
+    border-radius: 12px;
+  }
+
+  .market-shortcuts svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .market-shortcuts b {
+    font-size: 10px;
+  }
+
+  .market-section {
+    margin-bottom: 27px;
+  }
+
+  .market-section-heading {
+    margin-bottom: 13px;
+  }
+
+  .market-section-heading h2 {
+    gap: 7px;
+    font-size: 16px;
+  }
+
+  .heading-marker {
+    height: 20px;
+    width: 4px;
+  }
+
+  .market-section-heading > a {
+    gap: 3px;
+    font-size: 11px;
+  }
+
+  .popular-shop-card {
+    width: 150px;
+    min-width: 150px;
+    padding: 14px 10px;
+    border-radius: 14px;
+  }
+
+  .popular-shop-logo,
+  .popular-shop-placeholder {
+    width: 56px;
+    height: 56px;
+  }
+
+  .popular-shop-main b {
+    font-size: 12px;
+  }
+
+  .popular-shop-main small {
+    font-size: 10px;
+  }
+
+  .shop-follow-button {
+    min-height: 32px;
+    font-size: 10px;
+  }
+
+  .trending-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .market-empty {
+    min-height: 140px;
+    padding: 20px 12px;
+  }
+
+  .market-empty b {
+    font-size: 12px;
+  }
+
+  .market-empty span {
+    font-size: 11px;
+  }
+}
+
+/* =====================================================
+   PETITS ÉCRANS
+   ===================================================== */
+
+@media (max-width: 360px) {
+  .market-home {
+    padding: 9px;
+  }
+
+  .market-shortcuts {
+    gap: 5px;
+  }
+
+  .market-shortcuts b {
+    font-size: 9px;
+  }
+
+  .popular-shop-card {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .market-section-heading h2 {
+    font-size: 14px;
+  }
+}
+
+/* =====================================================
+   ACCESSIBILITÉ : ANIMATIONS RÉDUITES
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .market-home *,
+  .market-home *::before,
+  .market-home *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+                        }
