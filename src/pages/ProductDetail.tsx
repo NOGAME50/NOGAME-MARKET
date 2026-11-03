@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ImageOff, Store, Flag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types';
+import ContactSellerButton from '../components/ContactSellerButton';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -41,7 +42,10 @@ export default function ProductDetail() {
         <div className="product-price detail-price">{Number(product.price).toLocaleString('fr-HT')} {product.currency || 'HTG'}</div>
         <p>{product.description || 'Aucune description fournie.'}</p>
         <p className="muted">{product.stock > 0 ? `${product.stock} disponible(s)` : 'Rupture de stock'}</p>
-        {shop && <Link className="btn btn-light" to={`/boutique/${product.shop_id}`}><Store /> Voir la boutique {shop.name}</Link>}
+        <div className="action-row">
+          <ContactSellerButton shopId={product.shop_id} prefill={`Bonjour, le produit « ${product.name} » est-il toujours disponible ?`} />
+          {shop && <Link className="btn btn-light" to={`/boutique/${product.shop_id}`}><Store /> Voir la boutique {shop.name}</Link>}
+        </div>
         <p><Link to={`/signaler?type=product&id=${product.id}`}><Flag size={15} /> Signaler ce produit</Link></p>
       </div>
     </div>
