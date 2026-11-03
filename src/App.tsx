@@ -11,6 +11,8 @@ import Shops from './pages/Shops';
 import ShopPage from './pages/ShopPage';
 import ProductDetail from './pages/ProductDetail';
 import Placeholder from './pages/Placeholder';
+import Messages from './pages/Messages';
+import Conversation from './pages/Conversation';
 
 // Pages vendeur
 import Merchant from './pages/Merchant';
@@ -144,7 +146,16 @@ export default function App() {
           path="messages"
           element={
             <Protected>
-              <Placeholder kind="messages" />
+              <Messages />
+            </Protected>
+          }
+        />
+
+        <Route
+          path="messages/:id"
+          element={
+            <Protected>
+              <Conversation />
             </Protected>
           }
         />
