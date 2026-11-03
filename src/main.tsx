@@ -8,6 +8,7 @@ import { AuthProvider } from './state/AuthContext';
 import './styles.css';
 import './theme.css';
 import './styles/market-home.css';
+import './styles/messages.css';
 
 ReactDOM.createRoot(
   document.getElementById('root')!
