@@ -1,0 +1,32 @@
+/* NOGAME MARKET — messagerie */
+.msg-list{display:grid;gap:10px;margin-top:18px}
+.msg-item{display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 14px #132a5b0c}
+.msg-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;background:#eaf1fc}
+.msg-avatar-fallback{display:grid;place-items:center;color:var(--blue);font-weight:900}
+.msg-main{display:grid;gap:2px;min-width:0;flex:1}
+.msg-main b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg-main small{color:var(--muted);font-size:11px}
+.msg-preview{color:#4a5a75;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg-meta{display:grid;justify-items:end;gap:6px;flex:none}
+.msg-meta small{color:var(--muted);font-size:11px}
+.msg-unread{min-width:22px;height:22px;padding:0 6px;display:grid;place-items:center;border-radius:20px;background:#ed1745;color:#fff;font-size:11px;font-weight:900}
+
+.chat-page{width:min(100%,720px);margin:0 auto;padding:12px 14px 0;display:flex;flex-direction:column;height:calc(100dvh - 100px)}
+.chat-head{display:flex;align-items:center;gap:12px;padding:6px 0 12px}
+.chat-title{display:grid;flex:1;min-width:0}
+.chat-title b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-title small{color:var(--muted);font-size:11px}
+.chat-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px 12px}
+.chat-empty{text-align:center;margin:auto}
+.bubble{max-width:82%;padding:9px 13px;border-radius:18px;display:grid;gap:3px;overflow-wrap:anywhere;font-size:14px;line-height:1.35}
+.bubble small{font-size:10px;opacity:.7;justify-self:end}
+.bubble-me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.bubble-them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:6px}
+.chat-error{margin:6px 0}
+.chat-form{display:flex;gap:8px;padding:10px 0 12px;background:var(--paper)}
+.chat-form input{flex:1;min-width:0;height:48px;padding:0 16px;border:1px solid #d7e0ed;border-radius:24px;background:#fff;outline-color:var(--blue)}
+.chat-form .btn{width:48px;height:48px;padding:0;border-radius:50%}
+@media(max-width:760px){
+ /* barre du haut (96px) + barre du bas flottante (66px + marges) */
+ .chat-page{height:calc(100dvh - 96px - 88px)}
+}
