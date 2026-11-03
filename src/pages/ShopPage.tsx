@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import type { Product, Shop } from '../types';
 
 import ProductCard from '../components/ProductCard';
+import ContactSellerButton from '../components/ContactSellerButton';
 
 import {
   callLink,
@@ -214,6 +215,12 @@ export default function ShopPage() {
           </small>
 
           <div className="action-row">
+
+            <ContactSellerButton
+              shopId={shop.id}
+              ownerId={shop.owner_id}
+              prefill="Bonjour, je vous contacte depuis NOGAME MARKET."
+            />
 
             {shop.phone && (
               <a
