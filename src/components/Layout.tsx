@@ -4,14 +4,14 @@ import { useState } from 'react';
 import Brand from './Brand';
 import { useAuth } from '../state/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useUnreadCount } from '../lib/messaging';
 
 export default function Layout() {
   const { user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  // Le compteur reste à zéro tant que la table de messages n'est pas raccordée.
-  // Il ne faut jamais afficher un nombre fictif.
-  const unreadMessageCount = 0;
+  // Nombre réel de messages non lus (0 si déconnecté).
+  const unreadMessageCount = useUnreadCount();
   const close = () => setOpen(false);
 
   const logout = async () => {
