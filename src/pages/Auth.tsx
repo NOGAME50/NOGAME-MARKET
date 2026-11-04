@@ -1,10 +1,89 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Mail, LockKeyhole, UserRound, Phone, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, LockKeyhole, UserRound, Phone, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Brand from '../components/Brand';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../state/AuthContext';
 import type { UserRole } from '../types';
+
+const EMAIL_TYPOS: Record<string, string> = {
+  'gmial.com': 'gmail.com',
+  'gmai.com': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gmail.con': 'gmail.com',
+  'gmaill.com': 'gmail.com',
+  'hotmial.com': 'hotmail.com',
+  'hotmai.com': 'hotmail.com',
+  'yaho.com': 'yahoo.com',
+  'yahooo.com': 'yahoo.com',
+  'outlok.com': 'outlook.com'
+};
+
+function checkEmail(value: string): string | null {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) return 'Adresse e-mail invalide. Exemple : nom@gmail.com';
+  const domain = value.split('@')[1] ?? '';
+  const fix = EMAIL_TYPOS[domain];
+  return fix ? `Vérifie ton adresse : voulais-tu écrire @${fix} ?` : null;
+}
+
+function checkPassword(value: string): string | null {
+  if (value.length < 8) return 'Le mot de passe doit avoir au moins 8 caractères.';
+  if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+    return 'Le mot de passe doit contenir au moins une lettre et un chiffre.';
+  }
+  return null;
+}
+
+function friendlyError(text: string): string {
+  const m = text.toLowerCase();
+  if (m.includes('invalid login credentials')) return 'E-mail ou mot de passe incorrect.';
+  if (m.includes('already registered')) return 'Un compte existe déjà avec cet e-mail. Connecte-toi.';
+  if (m.includes('rate limit') || m.includes('too many')) return 'Trop de tentatives. Réessaie dans quelques minutes.';
+  if (m.includes('error sending')) return 'Impossible d’envoyer le code pour le moment. Réessaie plus tard.';
+  if (m.includes('token has expired') || m.includes('otp')) return 'Code invalide ou expiré. Demande un nouveau code.';
+  if (m.includes('password should be')) return 'Mot de passe trop faible. Utilise au moins 8 caractères avec lettres et chiffres.';
+  return text;
+}
+
+function PasswordField({
+  label,
+  value,
+  onChange,
+  autoComplete,
+  minLength
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  autoComplete: string;
+  minLength?: number;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <label>
+      {label}
+      <div className="input-wrap">
+        <LockKeyhole />
+        <input
+          required
+          minLength={minLength}
+          type={visible ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={ev => onChange(ev.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(v => !v)}
+          aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          style={{ background: 'none', border: 0, padding: 0, display: 'grid', placeItems: 'center', flex: 'none' }}
+        >
+          {visible ? <EyeOff /> : <Eye />}
+        </button>
+      </div>
+    </label>
+  );
+}
 
 function GoogleIcon() {
   return (
@@ -31,6 +110,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'form' | 'code'>('form');
   const [message, setMessage] = useState('');
@@ -51,26 +131,48 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
       setMessage('Supabase non configuré. Complète .env.local.');
       return;
     }
+    const cleanEmail = email.trim().toLowerCase();
+    const emailProblem = checkEmail(cleanEmail);
+    if (emailProblem) {
+      setMessage(emailProblem);
+      return;
+    }
+    if (mode === 'register') {
+      const passwordProblem = checkPassword(password);
+      if (passwordProblem) {
+        setMessage(passwordProblem);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setMessage('Les deux mots de passe ne sont pas identiques.');
+        return;
+      }
+    }
+    setEmail(cleanEmail);
     setBusy(true);
     try {
       if (mode === 'register') {
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: cleanEmail,
           password,
           options: { data: { full_name: name, phone, requested_role: role } }
         });
         if (error) throw error;
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          setMessage('Un compte existe déjà avec cet e-mail. Connecte-toi, ou utilise « Continuer avec Google ».');
+          return;
+        }
         if (data.session) {
           await finish();
         } else {
           setStep('code');
-          setMessage(`Un code de confirmation a été envoyé à ${email}.`);
+          setMessage(`Un code de confirmation a été envoyé à ${cleanEmail}.`);
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) {
           if (error.message.toLowerCase().includes('not confirmed')) {
-            await supabase.auth.resend({ type: 'signup', email });
+            await supabase.auth.resend({ type: 'signup', email: cleanEmail });
             setStep('code');
             setMessage('Ton adresse n’est pas encore confirmée. Un nouveau code vient d’être envoyé.');
             return;
@@ -80,7 +182,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
         await finish();
       }
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Une erreur est survenue.');
+      setMessage(err instanceof Error ? friendlyError(err.message) : 'Une erreur est survenue.');
     } finally {
       setBusy(false);
     }
@@ -100,7 +202,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
       if (!data.session) throw new Error('Code accepté, mais aucune session ouverte. Connecte-toi.');
       await finish();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Code invalide ou expiré.');
+      setMessage(err instanceof Error ? friendlyError(err.message) : 'Code invalide ou expiré.');
     } finally {
       setBusy(false);
     }
@@ -115,7 +217,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
       if (error) throw error;
       setMessage('Un nouveau code vient d’être envoyé.');
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Envoi impossible pour le moment.');
+      setMessage(err instanceof Error ? friendlyError(err.message) : 'Envoi impossible pour le moment.');
     } finally {
       setBusy(false);
     }
@@ -243,19 +345,28 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
               <input required type="email" value={email} onChange={ev => setEmail(ev.target.value)} />
             </div>
           </label>
-          <label>
-            Mot de passe
-            <div className="input-wrap">
-              <LockKeyhole />
-              <input
-                required
+          <PasswordField
+            label="Mot de passe"
+            value={password}
+            onChange={setPassword}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            minLength={mode === 'register' ? 8 : undefined}
+          />
+          {mode === 'register' && (
+            <>
+              <small style={{ color: '#6b7a90' }}>8 caractères minimum, avec au moins une lettre et un chiffre.</small>
+              <PasswordField
+                label="Confirmer le mot de passe"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                autoComplete="new-password"
                 minLength={8}
-                type="password"
-                value={password}
-                onChange={ev => setPassword(ev.target.value)}
               />
-            </div>
-          </label>
+              {confirmPassword && password !== confirmPassword && (
+                <small style={{ color: '#b42318' }}>Les deux mots de passe ne sont pas identiques.</small>
+              )}
+            </>
+          )}
           {message && <div className="notice">{message}</div>}
           <button className="btn btn-primary btn-full" disabled={busy}>
             {busy ? 'Patiente…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
