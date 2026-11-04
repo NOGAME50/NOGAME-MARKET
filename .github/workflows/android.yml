@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # La ligne cache: 'npm' a été retirée pour éviter l'erreur de lock file
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -32,7 +32,7 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      # C'est ici que ça se jouait ! On force l'initialisation de Capacitor
+      # On force l'initialisation de Capacitor pour être sûr d'avoir l'appId
       - name: Initialize Capacitor
         run: npx cap init "NOGAME MARKET" com.nogame.market --web-dir dist
 
@@ -54,16 +54,9 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # Récupérer l'APK et le mettre à disposition
+      # Récupérer l'APK et le mettre à disposition en téléchargement
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
-      # Optionnel : Créer une Release GitHub automatiquement
-      # - name: Create Release
-      #   uses: softprops/action-gh-release@v2
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   with:
-      #     files: android/app/build/outputs/apk/debug/app-debug.apk
