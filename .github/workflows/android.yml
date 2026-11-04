@@ -1,113 +1,69 @@
-name: Android APK
+name: Build Android APK
 
 on:
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Permet de lancer le workflow manuellement depuis GitHub
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le code source
-      - name: Récupérer le code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installer Node.js
-      - name: Installer Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      # 3. Installer Java
-      - name: Installer Java
+      - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: 'temurin'
+          java-version: '17'
 
-      # 4. Installer les dépendances
-      - name: Installer les dépendances
+      - name: Install dependencies
         run: npm install
 
-      # 5. Construire le site web
-      - name: Construire le site
+      - name: Build Web App
         run: npm run build
 
-      # 6. Créer le projet Android si nécessaire
-      - name: Créer le projet Android
+      # C'est ici que ça se jouait ! On force l'initialisation de Capacitor
+      - name: Initialize Capacitor
+        run: npx cap init "NOGAME MARKET" com.nogame.market --web-dir dist
+
+      # Ajout de la plateforme Android si elle n'existe pas déjà
+      - name: Add Android Platform
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
 
-      # 7. Préparer le logo et le splash screen
-      - name: Logo et écran de démarrage
-        run: |
-          mkdir -p assets
-
-          curl -fL -o assets/icon.png \
-            "https://i.postimg.cc/0QzqThsV/image-1024x1024.png"
-
-          cp assets/icon.png assets/splash.png
-
-          npx --yes @capacitor/assets generate \
-            --android \
-            --iconBackgroundColor "#101827" \
-            --splashBackgroundColor "#101827"
-
-      # 8. Autoriser GPS, caméra et accès aux photos
-      - name: Autoriser GPS et photos
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          manifest = Path("android/app/src/main/AndroidManifest.xml")
-          content = manifest.read_text()
-
-          permissions = [
-              '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
-              '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
-              '    <uses-permission android:name="android.permission.CAMERA" />',
-              '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
-              '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />'
-          ]
-
-          for permission in permissions:
-              permission_name = permission.split('"')[1]
-
-              if permission_name not in content:
-                  content = content.replace(
-                      '</manifest>',
-                      permission + '\n</manifest>'
-                  )
-
-          manifest.write_text(content)
-          PY
-
-      # 9. Synchroniser Capacitor
-      - name: Synchroniser
+      # Synchroniser le code web (dist) avec le projet Android
+      - name: Sync Capacitor
         run: npx cap sync android
 
-      # 10. Compiler l'APK
-      - name: Compiler l'APK
-        working-directory: android
+      # Compiler l'APK avec Gradle
+      - name: Build Android APK
         run: |
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 11. Préparer le fichier APK
-      - name: Préparer le fichier
-        run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
-
-      # 12. Publier l'APK sur GitHub Releases
-      - name: Publier l'APK
-        uses: softprops/action-gh-release@v2
+      # Récupérer l'APK et le mettre à disposition
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: apk-${{ github.run_number }}
-          name: NOGAME MARKET APK ${{ github.run_number }}
-          prerelease: true
-          files: NOGAME-MARKET.apk
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      # Optionnel : Créer une Release GitHub automatiquement
+      # - name: Create Release
+      #   uses: softprops/action-gh-release@v2
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   with:
+      #     files: android/app/build/outputs/apk/debug/app-debug.apk
