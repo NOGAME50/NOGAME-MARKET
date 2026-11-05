@@ -1,0 +1,8 @@
+/* Android 16 : l'app s'affiche sous la barre d'état et la barre de navigation.
+   Sur le site web ces valeurs valent 0 : aucun changement visible. */
+:root {
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+}
+.topbar { padding-top: calc(10px + var(--sat)); }
+.mobile-bottom { bottom: calc(10px + var(--sab)); }
