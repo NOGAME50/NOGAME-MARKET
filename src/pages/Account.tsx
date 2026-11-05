@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UserRound, Store, Flag, Settings } from 'lucide-react';
+import { UserRound, Store, Flag, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '../state/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { UserRole } from '../types';
@@ -18,10 +18,25 @@ const CHOICES: { value: UserRole; title: string; hint: string }[] = [
   { value: 'wholesaler', title: 'Grossiste', hint: 'Je vends en gros' }
 ];
 
+async function removeMyImages(userId: string) {
+  if (!supabase) return;
+  try {
+    const bucket = supabase.storage.from('product-images');
+    const { data } = await bucket.list(userId, { limit: 1000 });
+    const paths = (data ?? []).map(file => `${userId}/${file.name}`);
+    if (paths.length > 0) await bucket.remove(paths);
+  } catch {
+    // Nettoyage des photos : si les règles de stockage l'interdisent, la suppression du compte continue.
+  }
+}
+
 export default function Account() {
   const { user, profile, refreshProfile } = useAuth();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const role: UserRole = profile?.role ?? 'buyer';
 
   const change = async (next: UserRole) => {
@@ -40,6 +55,28 @@ export default function Account() {
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Changement impossible.');
     } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!supabase || !user || busy || confirmText.trim().toUpperCase() !== 'SUPPRIMER') return;
+    setBusy(true);
+    setDeleteError('');
+    try {
+      await removeMyImages(user.id);
+      const { error } = await supabase.rpc('delete_my_account');
+      if (error) throw error;
+      await supabase.auth.signOut({ scope: 'local' });
+      window.location.assign('/');
+    } catch (err) {
+      const text =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : '';
+      setDeleteError(text || 'Suppression impossible pour le moment.');
       setBusy(false);
     }
   };
@@ -113,6 +150,64 @@ export default function Account() {
           Paramètres
         </Link>
       </div>
+
+      <p style={{ marginTop: 18 }}>
+        <small>
+          <Link to="/confidentialite">Politique de confidentialité</Link>
+        </small>
+      </p>
+
+      {role !== 'admin' && (
+        <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid #dfe6f1', display: 'grid', gap: 10 }}>
+          <b style={{ color: '#b42318' }}>Supprimer mon compte</b>
+          {!confirming ? (
+            <button type="button" className="btn btn-light" onClick={() => setConfirming(true)}>
+              <Trash2 />
+              Supprimer mon compte
+            </button>
+          ) : (
+            <>
+              <p style={{ margin: 0 }}>
+                Cette action est définitive : ton profil, tes boutiques, tes produits, tes messages et tes
+                favoris seront supprimés. Écris <b>SUPPRIMER</b> pour confirmer.
+              </p>
+              <input
+                value={confirmText}
+                onChange={ev => setConfirmText(ev.target.value)}
+                placeholder="SUPPRIMER"
+                autoCapitalize="characters"
+                aria-label="Confirmation de suppression"
+                style={{ height: 46, padding: '0 14px', border: '1px solid #d7e0ed', borderRadius: 12 }}
+              />
+              {deleteError && <div className="notice">{deleteError}</div>}
+              <div className="action-row">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={busy || confirmText.trim().toUpperCase() !== 'SUPPRIMER'}
+                  onClick={() => void deleteAccount()}
+                  style={{ background: '#b42318' }}
+                >
+                  <Trash2 />
+                  {busy ? 'Suppression…' : 'Supprimer définitivement'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-light"
+                  disabled={busy}
+                  onClick={() => {
+                    setConfirming(false);
+                    setConfirmText('');
+                    setDeleteError('');
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
