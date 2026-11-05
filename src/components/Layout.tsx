@@ -5,6 +5,7 @@ import Brand from './Brand';
 import { useAuth } from '../state/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useUnreadCount } from '../lib/messaging';
+import { usePendingRole } from '../lib/pendingRole';
 
 export default function Layout() {
   const { user, profile } = useAuth();
@@ -12,6 +13,7 @@ export default function Layout() {
   const navigate = useNavigate();
   // Nombre réel de messages non lus (0 si déconnecté).
   const unreadMessageCount = useUnreadCount();
+  usePendingRole();
   const close = () => setOpen(false);
 
   const logout = async () => {
