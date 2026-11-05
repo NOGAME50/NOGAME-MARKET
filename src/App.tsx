@@ -14,6 +14,7 @@ import Placeholder from './pages/Placeholder';
 import Messages from './pages/Messages';
 import Conversation from './pages/Conversation';
 import Privacy from './pages/Privacy';
+import Settings from './pages/Settings';
 import AccountDeletion from './pages/AccountDeletion';
 
 // Pages vendeur
@@ -184,7 +185,7 @@ export default function App() {
           path="parametres"
           element={
             <Protected>
-              <Placeholder kind="settings" />
+              <Settings />
             </Protected>
           }
         />
