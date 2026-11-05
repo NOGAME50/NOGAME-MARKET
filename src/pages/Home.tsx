@@ -338,20 +338,18 @@ export default function Home() {
                   to={`/boutique/${shop.id}`}
                   className="popular-shop-main"
                 >
-                  <span className="popular-shop-logo-wrap">
-                    {shop.logo_url ? (
-                      <img
-                        className="popular-shop-logo"
-                        src={shop.logo_url}
-                        alt={`Logo ${shop.name}`}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="popular-shop-placeholder">
-                        <Store />
-                      </span>
-                    )}
-                  </span>
+                  {shop.logo_url ? (
+                    <img
+                      className="popular-shop-logo"
+                      src={shop.logo_url}
+                      alt={`Logo ${shop.name}`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="popular-shop-placeholder">
+                      <Store />
+                    </span>
+                  )}
 
                   <b>{shop.name}</b>
 
