@@ -23,6 +23,22 @@ export interface ConversationRow {
   unread_count: number;
 }
 
+// Les erreurs Supabase (PostgrestError) ne sont pas des « Error » JavaScript : on lit leur message à la main.
+export function errorText(err: unknown, fallback: string): string {
+  let message = '';
+  if (err instanceof Error) {
+    message = err.message;
+  } else if (typeof err === 'object' && err !== null && 'message' in err) {
+    const value = (err as { message?: unknown }).message;
+    if (typeof value === 'string') message = value;
+  }
+  if (!message) return fallback;
+  if (message.includes('Could not find the function') || message.includes('schema cache')) {
+    return 'La messagerie n’est pas encore installée sur le serveur (script messaging_v1.sql).';
+  }
+  return message;
+}
+
 export const MESSAGES_CHANGED = 'nm-messages-changed';
 
 export function notifyMessagesChanged() {
