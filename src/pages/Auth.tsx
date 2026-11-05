@@ -428,7 +428,8 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
         </p>
         <small>
           Les comptes acheteurs, vendeurs et grossistes sont gratuits. Les droits administrateur ne peuvent pas
-          être choisis ici.
+          être choisis ici. En continuant, tu acceptes notre{' '}
+          <Link to="/confidentialite">politique de confidentialité</Link>.
         </small>
       </div>
     </div>
