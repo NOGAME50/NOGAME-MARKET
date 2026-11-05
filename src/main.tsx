@@ -9,6 +9,7 @@ import './styles.css';
 import './theme.css';
 import './styles/market-home.css';
 import './styles/messages.css';
+import './styles/safe-area.css';
 
 ReactDOM.createRoot(
   document.getElementById('root')!
