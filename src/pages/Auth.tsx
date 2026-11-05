@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { Mail, LockKeyhole, UserRound, Phone, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Brand from '../components/Brand';
 import { supabase } from '../lib/supabase';
@@ -97,6 +98,8 @@ function GoogleIcon() {
 }
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
+  // Google refuse la connexion dans la WebView de l'APK : le bouton reste réservé au site web pour l'instant.
+  const showGoogle = !Capacitor.isNativePlatform();
   const [params] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -374,19 +377,23 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
           </button>
         </form>
 
-        <div
-          aria-hidden="true"
-          style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', color: '#6b7a90', fontSize: 12 }}
-        >
-          <span style={{ flex: 1, height: 1, background: '#dfe6f1' }} />
-          ou
-          <span style={{ flex: 1, height: 1, background: '#dfe6f1' }} />
-        </div>
+        {showGoogle && (
+          <>
+            <div
+              aria-hidden="true"
+              style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', color: '#6b7a90', fontSize: 12 }}
+            >
+              <span style={{ flex: 1, height: 1, background: '#dfe6f1' }} />
+              ou
+              <span style={{ flex: 1, height: 1, background: '#dfe6f1' }} />
+            </div>
 
-        <button type="button" className="btn btn-light btn-full" onClick={() => void google()} disabled={busy}>
-          <GoogleIcon />
-          Continuer avec Google
-        </button>
+            <button type="button" className="btn btn-light btn-full" onClick={() => void google()} disabled={busy}>
+              <GoogleIcon />
+              Continuer avec Google
+            </button>
+          </>
+        )}
 
         <p className="auth-switch">
           {mode === 'login' ? (
