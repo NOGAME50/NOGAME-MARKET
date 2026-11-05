@@ -1,6 +1,6 @@
 import type { Product } from '../types';
 import { Link } from 'react-router-dom';
-import { ImageOff, Heart, Store, ArrowRight } from 'lucide-react';
+import { ImageOff, Heart, Store } from 'lucide-react';
 
 export default function ProductCard({ product }: { product: Product }) {
   const shop = Array.isArray(product.shops) ? product.shops[0] : product.shops;
@@ -15,20 +15,15 @@ export default function ProductCard({ product }: { product: Product }) {
             <div className="image-empty"><ImageOff /><span>Photo indisponible</span></div>
           )}
         </Link>
-        <span className="product-category-badge">{product.category || 'Produit'}</span>
-        <button className="product-favorite" type="button" aria-label="Ajouter aux favoris" title="Ajouter aux favoris">
+        <button className="product-favorite" type="button" aria-label="Favoris bientôt disponible" title="Favoris bientôt disponible">
           <Heart />
         </button>
       </div>
       <div className="product-info">
+        <span className="eyebrow">{product.category || 'Produit'}</span>
         <Link to={`/produit/${product.id}`} className="product-name">{product.name}</Link>
         <div className="product-price">{Number(product.price).toLocaleString('fr-HT')} {product.currency || 'HTG'}</div>
-        <div className="product-bottom-row">
-          <div className="product-shop"><Store size={14} /><span>{shop?.name || 'Boutique'}</span></div>
-          <Link to={`/produit/${product.id}`} className="product-open-button" aria-label={`Voir ${product.name}`}>
-            <ArrowRight size={17} />
-          </Link>
-        </div>
+        <div className="product-shop"><Store size={14} />{shop?.name || 'Boutique'}</div>
       </div>
     </article>
   );
