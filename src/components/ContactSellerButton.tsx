@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../state/AuthContext';
+import { errorText } from '../lib/messaging';
 
 type Props = {
   shopId: string;
@@ -35,7 +36,7 @@ export default function ContactSellerButton({ shopId, ownerId, prefill }: Props)
       if (rpcError) throw rpcError;
       navigate(`/messages/${data as string}`, { state: { draft: prefill ?? '' } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible d’ouvrir la conversation.');
+      setError(errorText(err, 'Impossible d’ouvrir la conversation.'));
     } finally {
       setBusy(false);
     }
