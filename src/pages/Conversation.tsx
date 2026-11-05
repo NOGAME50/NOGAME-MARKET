@@ -4,6 +4,7 @@ import { ArrowLeft, Flag, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../state/AuthContext';
 import {
+  errorText,
   fetchConversations,
   formatChatTime,
   notifyMessagesChanged,
@@ -59,7 +60,7 @@ export default function Conversation() {
         setMessages((result.data ?? []) as Message[]);
         void markRead();
       } catch (err) {
-        if (alive) setError(err instanceof Error ? err.message : 'Chargement impossible.');
+        if (alive) setError(errorText(err, 'Chargement impossible.'));
       } finally {
         if (alive) setLoading(false);
       }
@@ -108,7 +109,7 @@ export default function Conversation() {
       setText('');
       notifyMessagesChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Envoi impossible.');
+      setError(errorText(err, 'Envoi impossible.'));
     } finally {
       setSending(false);
     }
