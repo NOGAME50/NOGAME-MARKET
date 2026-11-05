@@ -1,110 +1,155 @@
-name: Android APK
+name: Android (APK de test + AAB Play Store)
 
 on:
   workflow_dispatch:
+    inputs:
+      build_aab:
+        description: "Construire aussi l'AAB signé pour le Play Store"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
+
+env:
+  # "true" seulement si la clé de signature est enregistrée dans les secrets GitHub.
+  HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le code source
       - name: Récupérer le code
         uses: actions/checkout@v4
 
-      # 2. Installer Node.js
+      # Capacitor 8 exige Node 22 et Java 21.
       - name: Installer Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      # 3. Installer Java
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
-      # 4. Installer les dépendances
       - name: Installer les dépendances
-        run: npm install
+        run: npm install --no-audit --no-fund
 
-      # 5. Construire le site web
       - name: Construire le site
         run: npm run build
 
-      # 6. Créer le projet Android si nécessaire
       - name: Créer le projet Android
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
 
-      # 7. Préparer le logo et le splash screen
+      # Mets ton logo 1024x1024 dans assets/icon.png (dépôt GitHub) pour ne plus dépendre d'un lien externe.
       - name: Logo et écran de démarrage
         run: |
           mkdir -p assets
-
-          curl -fL -o assets/icon.png \
-            "https://i.postimg.cc/0QzqThsV/image-1024x1024.png"
-
-          cp assets/icon.png assets/splash.png
-
+          if [ ! -f assets/icon.png ]; then
+            curl -fL -o assets/icon.png "https://i.postimg.cc/0QzqThsV/image-1024x1024.png"
+          fi
+          if [ ! -f assets/splash.png ]; then
+            cp assets/icon.png assets/splash.png
+          fi
           npx --yes @capacitor/assets generate \
             --android \
             --iconBackgroundColor "#101827" \
             --splashBackgroundColor "#101827"
 
-      # 8. Autoriser GPS, caméra et accès aux photos
-      - name: Autoriser GPS et photos
+      - name: Numéro de version
+        run: |
+          echo "VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")" >> "$GITHUB_ENV"
+
+      # Permissions minimales : position (« Près de moi ») et appareil photo (photos de produits).
+      # READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE ne sont volontairement PAS demandées :
+      # le sélecteur de fichiers d'Android n'en a pas besoin, et Google Play restreint ces permissions.
+      - name: Permissions et version de l'app
         run: |
           python3 - <<'PY'
+          import os, re
           from pathlib import Path
 
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           content = manifest.read_text()
-
           permissions = [
-              '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
-              '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
-              '    <uses-permission android:name="android.permission.CAMERA" />',
-              '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
-              '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />'
+              "android.permission.ACCESS_FINE_LOCATION",
+              "android.permission.ACCESS_COARSE_LOCATION",
+              "android.permission.CAMERA",
           ]
-
-          for permission in permissions:
-              permission_name = permission.split('"')[1]
-
-              if permission_name not in content:
-                  content = content.replace(
-                      '</manifest>',
-                      permission + '\n</manifest>'
-                  )
-
+          for name in permissions:
+              if name not in content:
+                  line = f'    <uses-permission android:name="{name}" />'
+                  content = content.replace("</manifest>", line + "\n</manifest>")
           manifest.write_text(content)
+
+          gradle = Path("android/app/build.gradle")
+          text = gradle.read_text()
+          text, n_code = re.subn(r"versionCode\s+\d+", "versionCode " + os.environ["VERSION_CODE"], text)
+          text, n_name = re.subn(r'versionName\s+"[^"]*"', 'versionName "' + os.environ["VERSION_NAME"] + '"', text)
+          if n_code != 1 or n_name != 1:
+              raise SystemExit("versionCode/versionName introuvables dans android/app/build.gradle")
+          gradle.write_text(text)
           PY
 
-      # 9. Synchroniser Capacitor
       - name: Synchroniser
         run: npx cap sync android
 
-      # 10. Compiler l'APK
-      - name: Compiler l'APK
+      # APK de test : s'installe directement sur ton téléphone (signé en mode debug, PAS pour le Play Store).
+      - name: Compiler l'APK de test
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 11. Préparer le fichier APK
-      - name: Préparer le fichier
-        run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
+      - name: Préparer l'APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk NOGAME-MARKET.apk
 
-      # 12. Publier l'APK sur GitHub Releases
-      - name: Publier l'APK
+      # AAB pour le Play Store : construit et signé seulement si la clé est enregistrée.
+      - name: Compiler l'AAB
+        if: ${{ inputs.build_aab && env.HAS_KEYSTORE == 'true' }}
+        working-directory: android
+        run: ./gradlew bundleRelease
+
+      - name: Signer l'AAB
+        if: ${{ inputs.build_aab && env.HAS_KEYSTORE == 'true' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          cp android/app/build/outputs/bundle/release/app-release.aab NOGAME-MARKET.aab
+          jarsigner \
+            -keystore "$RUNNER_TEMP/upload.jks" \
+            -storepass:env KS_PASS \
+            -keypass:env KEY_PASS \
+            -sigalg SHA256withRSA -digestalg SHA-256 \
+            NOGAME-MARKET.aab "$KEY_ALIAS"
+          jarsigner -verify NOGAME-MARKET.aab
+          rm -f "$RUNNER_TEMP/upload.jks"
+
+      - name: Avertissement sans clé de signature
+        if: ${{ inputs.build_aab && env.HAS_KEYSTORE != 'true' }}
+        run: |
+          echo "::warning::Aucune clé de signature (secret ANDROID_KEYSTORE_BASE64), l'AAB pour le Play Store n'a pas été construit."
+
+      - name: Publier l'AAB (téléchargeable dans Actions)
+        if: ${{ inputs.build_aab && env.HAS_KEYSTORE == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOGAME-MARKET-aab-${{ github.run_number }}
+          path: NOGAME-MARKET.aab
+          retention-days: 30
+
+      - name: Publier l'APK de test
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-${{ github.run_number }}
