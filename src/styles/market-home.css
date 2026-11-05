@@ -752,3 +752,333 @@
     transition-duration: 0.01ms !important;
   }
                         }
+
+
+/* =====================================================
+   NOGAME MARKET — FINITION VISUELLE INSPIREE DU DESIGN
+   DE REFERENCE (cartes horizontales et images immersives)
+   ===================================================== */
+
+.market-home {
+  padding: 18px clamp(14px, 3.5vw, 30px) 34px;
+  background: linear-gradient(180deg, #f8faff 0%, #f1f5fb 100%);
+}
+
+.market-hero-carousel {
+  border-radius: 25px;
+  box-shadow: 0 12px 30px rgba(16, 40, 86, .13);
+}
+
+.market-shortcuts a {
+  min-height: 104px;
+  border-radius: 21px;
+  box-shadow: 0 5px 16px rgba(20, 48, 90, .07);
+}
+
+.market-shortcuts svg {
+  width: 29px;
+  height: 29px;
+  stroke-width: 2.4;
+}
+
+.market-section-heading {
+  margin-bottom: 18px;
+}
+
+.market-section-heading h2 {
+  font-size: clamp(18px, 2.4vw, 25px);
+  letter-spacing: -.55px;
+}
+
+.market-section-heading > a {
+  color: var(--nm-orange-dark);
+  font-size: 13px;
+}
+
+.shop-carousel {
+  gap: 13px;
+  padding: 3px 2px 13px;
+  scrollbar-width: none;
+}
+
+.shop-carousel::-webkit-scrollbar,
+.trending-products::-webkit-scrollbar {
+  display: none;
+}
+
+.popular-shop-card {
+  width: clamp(145px, 22vw, 205px);
+  min-width: clamp(145px, 22vw, 205px);
+  min-height: 226px;
+  justify-content: space-between;
+  padding: 18px 13px 13px;
+  border-radius: 21px;
+  box-shadow: 0 6px 18px rgba(16, 40, 86, .07);
+}
+
+.popular-shop-logo,
+.popular-shop-placeholder {
+  width: 78px;
+  height: 78px;
+  margin-bottom: 13px;
+}
+
+.popular-shop-main b {
+  min-height: 34px;
+  white-space: normal;
+  line-height: 1.25;
+  font-size: 14px;
+}
+
+.shop-follow-button {
+  min-height: 39px;
+  border: 1px solid var(--nm-orange);
+  border-radius: 12px;
+  color: var(--nm-orange-dark) !important;
+  background: #fff;
+  font-size: 12px;
+}
+
+.shop-follow-button:hover {
+  color: #fff !important;
+  background: var(--nm-orange);
+}
+
+/* Le carrousel produit conserve de grandes photos et permet
+   de parcourir les articles horizontalement comme la référence. */
+.trending-products {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 14px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trending-products > .product-card {
+  flex: 0 0 clamp(175px, 23vw, 230px);
+  width: clamp(175px, 23vw, 230px);
+  scroll-snap-align: start;
+  border-radius: 21px;
+  box-shadow: 0 5px 17px rgba(16, 40, 86, .07);
+}
+
+.trending-products .product-photo-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.trending-products .product-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+  background: #edf2f9;
+}
+
+.trending-products .product-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+
+.trending-products .product-card:hover .product-image img {
+  transform: scale(1.045);
+}
+
+.trending-products .product-info {
+  padding: 12px 13px 14px;
+}
+
+.trending-products .product-info .eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: #8793a5;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.trending-products .product-name {
+  min-height: 38px;
+  margin: 5px 0 8px;
+  color: #17243b;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.trending-products .product-price {
+  margin-top: 9px;
+  color: #12366f;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.trending-products .product-shop {
+  overflow: hidden;
+  margin-top: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trending-products .product-favorite {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(16, 29, 56, .08);
+  border-radius: 50%;
+  color: #14233d;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 3px 10px rgba(16, 29, 56, .12);
+}
+
+.trending-products .product-favorite svg {
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 600px) {
+  .market-home {
+    padding: 12px 12px 90px;
+  }
+
+  .market-hero-carousel {
+    border-radius: 18px;
+  }
+
+  .market-shortcuts {
+    gap: 8px;
+    margin: 17px 0 27px;
+  }
+
+  .market-shortcuts a {
+    min-height: 86px;
+    border-radius: 17px;
+  }
+
+  .market-shortcuts svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .market-section-heading h2 {
+    font-size: 17px;
+  }
+
+  .popular-shop-card {
+    width: 150px;
+    min-width: 150px;
+    min-height: 205px;
+    padding: 15px 11px 11px;
+    border-radius: 17px;
+  }
+
+  .popular-shop-logo,
+  .popular-shop-placeholder {
+    width: 66px;
+    height: 66px;
+  }
+
+  .popular-shop-main b {
+    font-size: 12px;
+  }
+
+  .shop-follow-button {
+    min-height: 35px;
+    font-size: 11px;
+  }
+
+  .trending-products {
+    gap: 11px;
+    margin-right: -12px;
+    padding-right: 12px;
+  }
+
+  .trending-products > .product-card {
+    flex-basis: min(47vw, 190px);
+    width: min(47vw, 190px);
+    border-radius: 17px;
+  }
+
+  .trending-products .product-info {
+    padding: 10px 11px 12px;
+  }
+
+  .trending-products .product-name {
+    min-height: 34px;
+    font-size: 12px;
+  }
+
+  .trending-products .product-price {
+    font-size: 16px;
+  }
+
+  .trending-products .product-shop {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trending-products .product-image img {
+    transition: none;
+  }
+}
+
+/* En-tête mobile — placé ici pour garder la priorité après theme.css */
+@media (max-width: 650px) {
+  .topbar {
+    height: 78px;
+    padding: 0 14px;
+    background: linear-gradient(115deg, #ffffff 0%, #f4f7ff 60%, #dce9ff 100%);
+    border-bottom: 1px solid #e7edf7;
+  }
+  .brand { gap: 9px; }
+  .brand img { width: 52px; height: 52px; border-radius: 13px; }
+  .brand-name strong { font-size: 17px; }
+  .brand-name b { font-size: 14px; letter-spacing: 1px; }
+  .header-actions { display: flex; align-items: center; gap: 9px; }
+  .header-icon {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 15px;
+    color: #10264d;
+    background: rgba(255,255,255,.88);
+  }
+  .header-icon svg { width: 22px; height: 22px; }
+  .mobile-bottom {
+    height: calc(70px + env(safe-area-inset-bottom));
+    padding: 5px 4px env(safe-area-inset-bottom);
+    border: 1px solid #edf0f5;
+    border-radius: 25px 25px 0 0;
+    box-shadow: 0 -7px 25px rgba(19, 39, 73, .08);
+  }
+  .mobile-bottom a {
+    position: relative;
+    gap: 5px;
+    font-size: 10px;
+    color: #142747;
+  }
+  .mobile-bottom a.active { color: #e98220; }
+  .mobile-bottom a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    width: 42px;
+    height: 3px;
+    border-radius: 5px;
+    background: #f28c28;
+  }
+  .mobile-bottom svg { width: 22px; height: 22px; stroke-width: 2.3; }
+}
