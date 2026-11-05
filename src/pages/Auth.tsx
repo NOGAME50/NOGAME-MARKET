@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
-import { Mail, LockKeyhole, UserRound, Phone, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Mail, LockKeyhole, UserRound, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Brand from '../components/Brand';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../state/AuthContext';
+import { forgetPendingRole, rememberPendingRole } from '../lib/pendingRole';
 import type { UserRole } from '../types';
 
 const EMAIL_TYPOS: Record<string, string> = {
@@ -86,6 +87,12 @@ function PasswordField({
   );
 }
 
+const ROLE_CHOICES: { value: UserRole; title: string; hint: string }[] = [
+  { value: 'buyer', title: 'Acheteur', hint: 'J’achète des produits' },
+  { value: 'merchant', title: 'Vendeur', hint: 'Je vends mes produits' },
+  { value: 'wholesaler', title: 'Grossiste', hint: 'Je vends en gros' }
+];
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
@@ -111,7 +118,6 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   );
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [code, setCode] = useState('');
@@ -158,7 +164,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
-          options: { data: { full_name: name, phone, requested_role: role } }
+          options: { data: { full_name: name, requested_role: role } }
         });
         if (error) throw error;
         if (data.user && data.user.identities && data.user.identities.length === 0) {
@@ -235,6 +241,8 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
     setBusy(true);
     try {
       const target = from && from.startsWith('/') && !from.startsWith('//') ? from : '/compte';
+      if (mode === 'register') rememberPendingRole(role);
+      else forgetPendingRole();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: `${window.location.origin}${target}` }
@@ -314,6 +322,37 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
         <h1>{mode === 'login' ? 'Connexion' : 'Créer un compte'}</h1>
         <p>{mode === 'login' ? 'Accède à ton espace.' : 'Rejoins les acheteurs et commerçants haïtiens.'}</p>
 
+        {mode === 'register' && (
+          <div style={{ display: 'grid', gap: 8, margin: '6px 0 16px' }}>
+            <b style={{ fontSize: 14 }}>Je m’inscris comme :</b>
+            {ROLE_CHOICES.map(choice => {
+              const selected = role === choice.value;
+              return (
+                <button
+                  key={choice.value}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setRole(choice.value)}
+                  style={{
+                    textAlign: 'left',
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    cursor: 'pointer',
+                    display: 'grid',
+                    gap: 2,
+                    color: 'inherit',
+                    border: selected ? '2px solid var(--orange)' : '1px solid #d7e0ed',
+                    background: selected ? '#fff6ea' : '#fff'
+                  }}
+                >
+                  <b>{choice.title}</b>
+                  <small style={{ color: '#6b7a90' }}>{choice.hint}</small>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <form className="form-stack" onSubmit={submit}>
           {mode === 'register' && (
             <>
@@ -323,21 +362,6 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
                   <UserRound />
                   <input required value={name} onChange={ev => setName(ev.target.value)} />
                 </div>
-              </label>
-              <label>
-                Téléphone
-                <div className="input-wrap">
-                  <Phone />
-                  <input required value={phone} onChange={ev => setPhone(ev.target.value)} placeholder="+509…" />
-                </div>
-              </label>
-              <label>
-                Type de compte
-                <select value={role} onChange={ev => setRole(ev.target.value as UserRole)}>
-                  <option value="buyer">Acheteur</option>
-                  <option value="merchant">Vendeur</option>
-                  <option value="wholesaler">Grossiste</option>
-                </select>
               </label>
             </>
           )}
