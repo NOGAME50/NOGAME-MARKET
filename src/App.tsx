@@ -13,6 +13,8 @@ import ProductDetail from './pages/ProductDetail';
 import Placeholder from './pages/Placeholder';
 import Messages from './pages/Messages';
 import Conversation from './pages/Conversation';
+import Privacy from './pages/Privacy';
+import AccountDeletion from './pages/AccountDeletion';
 
 // Pages vendeur
 import Merchant from './pages/Merchant';
@@ -62,6 +64,17 @@ export default function App() {
         <Route
           path="produit/:id"
           element={<ProductDetail />}
+        />
+
+        {/* PAGES LÉGALES (publiques, exigées par Google Play) */}
+        <Route
+          path="confidentialite"
+          element={<Privacy />}
+        />
+
+        <Route
+          path="suppression-compte"
+          element={<AccountDeletion />}
         />
 
         {/* ESPACE VENDEUR */}
