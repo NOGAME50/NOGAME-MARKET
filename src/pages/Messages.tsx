@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageCircle, Store } from 'lucide-react';
 import {
   MESSAGES_CHANGED,
+  errorText,
   fetchConversations,
   formatChatTime,
   otherPartyName,
@@ -25,7 +26,7 @@ export default function Messages() {
           setError(null);
         }
       } catch (err) {
-        if (alive) setError(err instanceof Error ? err.message : 'Chargement impossible.');
+        if (alive) setError(errorText(err, 'Chargement impossible.'));
       } finally {
         if (alive) setLoading(false);
       }
