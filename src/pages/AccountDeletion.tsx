@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CONTACT_EMAIL } from '../lib/legal';
+import ContactLink from '../components/ContactLink';
 
 export default function AccountDeletion() {
   return (
@@ -24,8 +24,8 @@ export default function AccountDeletion() {
 
       <h2>Tu n’arrives plus à te connecter ?</h2>
       <p>
-        Écris-nous à {CONTACT_EMAIL} depuis l’adresse e-mail de ton compte, avec pour objet « Suppression de
-        compte NOGAME MARKET ».
+        Écris-nous à <ContactLink subject="Suppression de compte NOGAME MARKET" /> depuis l’adresse e-mail
+        de ton compte, avec pour objet « Suppression de compte NOGAME MARKET ».
       </p>
 
       <p>
