@@ -87,6 +87,18 @@ jobs:
               if name not in content:
                   line = f'    <uses-permission android:name="{name}" />'
                   content = content.replace("</manifest>", line + "\n</manifest>")
+          # Lien profond utilisé par le retour de connexion Google sur Android.
+          activity_pattern = r'(<activity\b(?=[^>]*android:name="[^"]*MainActivity")[^>]*>)'
+          deep_link = r"""\1
+              <intent-filter>
+                  <action android:name="android.intent.action.VIEW" />
+                  <category android:name="android.intent.category.DEFAULT" />
+                  <category android:name="android.intent.category.BROWSABLE" />
+                  <data android:scheme="com.nogame.market" android:host="login-callback" />
+              </intent-filter>"""
+          content, activity_count = re.subn(activity_pattern, deep_link, content, count=1)
+          if activity_count != 1:
+              raise SystemExit("Impossible d'ajouter le lien profond OAuth à MainActivity")
           manifest.write_text(content)
 
           gradle = Path("android/app/build.gradle")
