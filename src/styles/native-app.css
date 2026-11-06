@@ -1,0 +1,29 @@
+/* Application Android : pas de sélection de texte, pas de menu « Copier / Sélect. tout ».
+   La classe « native-app » est ajoutée sur <html> par src/main.tsx (APK uniquement, pas le site). */
+html.native-app,
+html.native-app * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Les champs de saisie restent utilisables (écrire, coller, corriger). */
+html.native-app input,
+html.native-app textarea,
+html.native-app [contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Les images ne peuvent pas être glissées ou enregistrées par appui long. */
+html.native-app img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.contact-link {
+  color: var(--orange, #f58220);
+  font-weight: 700;
+  text-decoration: underline;
+}
