@@ -6,13 +6,13 @@
   gap: 6px;
   border: 0;
   color: #0a1c4a;
-  background: #ffffffed;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 }
 .like-btn svg {
   width: 18px;
   height: 18px;
+  flex: none;
   transition: transform 0.15s;
 }
 .like-btn:active svg {
@@ -28,21 +28,35 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Petit bouton sur la photo d'un produit (garde la position de .product-favorite). */
-.product-favorite.like-card {
-  width: auto;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
+/* Ligne du prix : le prix à gauche, le cœur dans l'espace blanc à droite (sans cacher la photo). */
+.product-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.product-price-row .product-price {
+  min-width: 0;
+}
+
+/* Petit bouton dans la carte produit. */
+.like-btn.like-card {
+  flex: none;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
   border-radius: 999px;
-  box-shadow: 0 2px 8px #00000014;
+  background: #f1f5fb;
+}
+.like-btn.like-card.is-liked {
+  background: #fff1f3;
 }
 .like-card .like-count:empty {
   display: none;
 }
 
 /* Bouton sur la page du produit. */
-.like-detail {
+.like-btn.like-detail {
   height: 46px;
   padding: 0 18px;
   border-radius: 12px;
@@ -53,18 +67,16 @@
 .like-detail .like-count {
   font-size: 13px;
 }
-.like-detail.is-liked {
+.like-btn.like-detail.is-liked {
   background: #fff1f3;
   border-color: #fecdd3;
 }
 
 @media (max-width: 650px) {
-  .product-favorite.like-card {
+  .like-btn.like-card {
     min-width: 30px;
     height: 30px;
     padding: 0 8px;
-    top: 8px;
-    right: 8px;
   }
   .like-card svg {
     width: 16px;
