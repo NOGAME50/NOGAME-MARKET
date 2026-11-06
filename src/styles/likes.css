@@ -1,0 +1,76 @@
+/* Bouton « J'aime » + compteur. */
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  color: #0a1c4a;
+  background: #ffffffed;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.like-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.15s;
+}
+.like-btn:active svg {
+  transform: scale(1.3);
+}
+.like-btn.is-liked {
+  color: #e11d48;
+}
+.like-count {
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Petit bouton sur la photo d'un produit (garde la position de .product-favorite). */
+.product-favorite.like-card {
+  width: auto;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px #00000014;
+}
+.like-card .like-count:empty {
+  display: none;
+}
+
+/* Bouton sur la page du produit. */
+.like-detail {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid #d7e0ed;
+  background: #fff;
+  font-size: 13px;
+}
+.like-detail .like-count {
+  font-size: 13px;
+}
+.like-detail.is-liked {
+  background: #fff1f3;
+  border-color: #fecdd3;
+}
+
+@media (max-width: 650px) {
+  .product-favorite.like-card {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    top: 8px;
+    right: 8px;
+  }
+  .like-card svg {
+    width: 16px;
+    height: 16px;
+  }
+  .like-card .like-count {
+    font-size: 11px;
+  }
+}
