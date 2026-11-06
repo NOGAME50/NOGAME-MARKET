@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { Mail, LockKeyhole, UserRound, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Brand from '../components/Brand';
 import { supabase } from '../lib/supabase';
@@ -105,8 +106,8 @@ function GoogleIcon() {
 }
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
-  // Google refuse la connexion dans la WebView de l'APK : le bouton reste réservé au site web pour l'instant.
-  const showGoogle = !Capacitor.isNativePlatform();
+  // La connexion Google est disponible sur le site et dans l'application Android.
+  const showGoogle = true;
   const [params] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -243,12 +244,27 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
       const target = from && from.startsWith('/') && !from.startsWith('//') ? from : '/compte';
       if (mode === 'register') rememberPendingRole(role);
       else forgetPendingRole();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${window.location.origin}${target}` }
-      });
-      if (error) throw error;
-      // Le navigateur est redirigé vers Google : rien d'autre à faire ici.
+      if (Capacitor.isNativePlatform()) {
+        // Android : ouvrir OAuth dans le navigateur système, jamais dans la WebView.
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: 'com.nogame.market://login-callback',
+            skipBrowserRedirect: true
+          }
+        });
+        if (error) throw error;
+        if (!data.url) throw new Error('Impossible de préparer la connexion Google.');
+        await Browser.open({ url: data.url });
+        setBusy(false);
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: `${window.location.origin}${target}` }
+        });
+        if (error) throw error;
+        // Sur le site, le navigateur poursuit normalement la redirection OAuth.
+      }
     } catch (err) {
       const text = err instanceof Error ? err.message : '';
       setMessage(
