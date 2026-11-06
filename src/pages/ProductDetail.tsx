@@ -4,6 +4,7 @@ import { ImageOff, Store, Flag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types';
 import ContactSellerButton from '../components/ContactSellerButton';
+import LikeButton from '../components/LikeButton';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -43,6 +44,7 @@ export default function ProductDetail() {
         <p>{product.description || 'Aucune description fournie.'}</p>
         <p className="muted">{product.stock > 0 ? `${product.stock} disponible(s)` : 'Rupture de stock'}</p>
         <div className="action-row">
+          <LikeButton productId={product.id} variant="detail" />
           <ContactSellerButton shopId={product.shop_id} prefill={`Bonjour, le produit « ${product.name} » est-il toujours disponible ?`} />
           {shop && <Link className="btn btn-light" to={`/boutique/${product.shop_id}`}><Store /> Voir la boutique {shop.name}</Link>}
         </div>
