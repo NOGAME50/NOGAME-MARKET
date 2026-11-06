@@ -1,0 +1,41 @@
+name: Générer la clé de signature Android
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-keystore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Générer une clé de signature unique
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p signing-output
+          KS_PASS="$(openssl rand -base64 32 | tr -d '=+/')"
+          KEY_PASS="$(openssl rand -base64 32 | tr -d '=+/')"
+          KEY_ALIAS="nogame-market-release"
+          keytool -genkeypair -v \
+            -keystore signing-output/nogame-release.jks \
+            -storetype JKS \
+            -storepass "$KS_PASS" \
+            -keypass "$KEY_PASS" \
+            -alias "$KEY_ALIAS" \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=NOGAME MARKET, OU=Android, O=NOGAME, L=Port-de-Paix, ST=Nord, C=HT"
+          base64 -w 0 signing-output/nogame-release.jks > signing-output/ANDROID_KEYSTORE_BASE64.txt
+          {
+            echo "ANDROID_KEYSTORE_PASSWORD=$KS_PASS"
+            echo "ANDROID_KEY_ALIAS=$KEY_ALIAS"
+            echo "ANDROID_KEY_PASSWORD=$KEY_PASS"
+          } > signing-output/REST_OF_SECRETS.txt
+          chmod 600 signing-output/*
+      - name: Déposer le paquet de configuration privé (1 jour)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOGAME-MARKET-SIGNING-SECRETS
+          path: signing-output/
+          retention-days: 1
