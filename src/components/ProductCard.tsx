@@ -1,6 +1,7 @@
 import type { Product } from '../types';
 import { Link } from 'react-router-dom';
-import { ImageOff, Heart, Store } from 'lucide-react';
+import { ImageOff, Store } from 'lucide-react';
+import LikeButton from './LikeButton';
 
 export default function ProductCard({ product }: { product: Product }) {
   const shop = Array.isArray(product.shops) ? product.shops[0] : product.shops;
@@ -15,9 +16,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <div className="image-empty"><ImageOff /><span>Photo indisponible</span></div>
           )}
         </Link>
-        <button className="product-favorite" type="button" aria-label="Favoris bientôt disponible" title="Favoris bientôt disponible">
-          <Heart />
-        </button>
+        <LikeButton productId={product.id} />
       </div>
       <div className="product-info">
         <span className="eyebrow">{product.category || 'Produit'}</span>
