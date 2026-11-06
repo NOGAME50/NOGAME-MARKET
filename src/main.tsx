@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './state/AuthContext';
 import { registerNativeAuthCallback } from './lib/nativeAuthCallback';
+import NativeBackButton from './lib/NativeBackButton';
 
 import './styles.css';
 import './theme.css';
@@ -21,6 +22,7 @@ ReactDOM.createRoot(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
+        <NativeBackButton />
         <App />
       </AuthProvider>
     </BrowserRouter>
