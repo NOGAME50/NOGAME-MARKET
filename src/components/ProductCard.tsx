@@ -16,12 +16,14 @@ export default function ProductCard({ product }: { product: Product }) {
             <div className="image-empty"><ImageOff /><span>Photo indisponible</span></div>
           )}
         </Link>
-        <LikeButton productId={product.id} />
       </div>
       <div className="product-info">
         <span className="eyebrow">{product.category || 'Produit'}</span>
         <Link to={`/produit/${product.id}`} className="product-name">{product.name}</Link>
-        <div className="product-price">{Number(product.price).toLocaleString('fr-HT')} {product.currency || 'HTG'}</div>
+        <div className="product-price-row">
+          <div className="product-price">{Number(product.price).toLocaleString('fr-HT')} {product.currency || 'HTG'}</div>
+          <LikeButton productId={product.id} />
+        </div>
         <div className="product-shop"><Store size={14} />{shop?.name || 'Boutique'}</div>
       </div>
     </article>
