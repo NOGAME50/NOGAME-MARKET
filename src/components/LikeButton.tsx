@@ -33,7 +33,7 @@ export default function LikeButton({
   const label = liked ? 'Retirer mon J’aime' : 'J’aime ce produit';
   const className = [
     'like-btn',
-    variant === 'card' ? 'product-favorite like-card' : 'like-detail',
+    variant === 'card' ? 'like-card' : 'like-detail',
     liked ? 'is-liked' : ''
   ]
     .filter(Boolean)
