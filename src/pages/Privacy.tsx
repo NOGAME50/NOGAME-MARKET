@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { CONTACT_EMAIL, LEGAL_UPDATED } from '../lib/legal';
+import ContactLink from '../components/ContactLink';
+import { LEGAL_UPDATED } from '../lib/legal';
 
 export default function Privacy() {
   return (
@@ -13,7 +14,8 @@ export default function Privacy() {
       <h2>Qui sommes-nous ?</h2>
       <p>
         NOGAME MARKET est une marketplace gratuite qui met en relation des acheteurs, des vendeurs et des
-        grossistes en Haïti. Pour toute question sur tes données : {CONTACT_EMAIL}.
+        grossistes en Haïti. Pour toute question sur tes données :{' '}
+        <ContactLink subject="Question sur mes données - NOGAME MARKET" />.
       </p>
 
       <h2>Les données que nous collectons</h2>
@@ -81,7 +83,8 @@ export default function Privacy() {
       <p>
         Tu peux consulter et modifier ton compte dans « Mon compte », et le supprimer à tout moment : voir{' '}
         <Link to="/suppression-compte">comment supprimer ton compte</Link>. Pour toute autre demande (accès,
-        correction, suppression), écris-nous à {CONTACT_EMAIL}.
+        correction, suppression), écris-nous à{' '}
+        <ContactLink subject="Demande sur mes données - NOGAME MARKET" />.
       </p>
 
       <h2>Sécurité</h2>
